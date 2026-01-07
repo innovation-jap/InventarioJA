@@ -10,4 +10,4 @@ RUN a2enmod rewrite
 COPY . /var/www/html
 
 # Directorio de trabajo
-WORKDIR /var/www/html
+WORKDIR /var/www/html  
