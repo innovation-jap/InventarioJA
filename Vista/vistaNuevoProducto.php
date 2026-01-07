@@ -150,7 +150,7 @@ require_once('../Controlador/controladorProducto.php');
             <a href="../Controlador/controladorProducto.php?accion=listar"
                class="w-full flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-9 px-4 bg-startup-white dark:bg-gray-700 text-immersive-blue-black dark:text-white text-sm font-bold gap-2 border border-ice dark:border-gray-600 hover:bg-ice/70 dark:hover:bg-gray-600">
                 <span class="material-symbols-outlined text-base">arrow_back</span>
-                <span class="truncate">Volver a inventaro</span>
+                <span class="truncate">Volver a inventario</span>
             </a>
         </footer>
     </main>
