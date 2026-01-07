@@ -1,5 +1,7 @@
 <?php
 require_once "conexion.php";
+use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\UTCDateTime;
 
 class modeloMovimientos {
 
@@ -7,78 +9,100 @@ class modeloMovimientos {
 
     public function __construct() {
         $conexion = new Database();
-        $this->db = $conexion->conectar(); // PDO
+        $this->db = $conexion->conectar();
     }
 
-    // Obtener todos los movimientos
+    /* ===========================
+        OBTENER TODOS LOS MOVIMIENTOS
+    ============================ */
     public function obtenerMovimientos() {
-        $sql = "SELECT m.idMovimiento, m.tipo,
-                       u.idUsuario, u.nombreU,
-                       p.nombreP, m.cantidad, m.fechaM
-                FROM movimientos m
-                JOIN usuario u ON m.idUsuario = u.idUsuario
-                JOIN producto p ON m.idProducto = p.idProducto
-                ORDER BY m.fechaM DESC";
-
-        $stmt = $this->db->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $this->ejecutarAgregacion([]);
     }
 
-    // Obtener movimientos por usuario
+    /* ===========================
+        OBTENER MOVIMIENTOS POR USUARIO
+    ============================ */
     public function obtenerMovimientosPorUsuario($idUsuario) {
-        $sql = "SELECT m.idMovimiento, m.tipo,
-                       u.idUsuario, u.nombreU,
-                       p.nombreP, m.cantidad, m.fechaM
-                FROM movimientos m
-                JOIN usuario u ON m.idUsuario = u.idUsuario
-                JOIN producto p ON m.idProducto = p.idProducto
-                WHERE m.idUsuario = :id
-                ORDER BY m.fechaM DESC";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([":id" => $idUsuario]);
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $filtro = ['$match' => ['idUsuario' => new ObjectId($idUsuario)]];
+        return $this->ejecutarAgregacion([$filtro]);
     }
 
-    // Movimientos filtrados
+    /* ===========================
+        MOVIMIENTOS FILTRADOS
+    ============================ */
     public function obtenerMovimientosFiltrados($fechaInicio = null, $fechaFin = null, $idProducto = null, $idUsuario = null) {
+        $match = [];
 
-        $sql = "SELECT m.idMovimiento, m.idProducto, m.tipo, m.cantidad, m.fechaM,
-                       p.nombreP, u.nombreU
-                FROM movimientos m
-                JOIN producto p ON m.idProducto = p.idProducto
-                JOIN usuario u ON m.idUsuario = u.idUsuario
-                WHERE 1=1";
-
-        $params = [];
-
-        if (!empty($fechaInicio)) {
-            $sql .= " AND m.fechaM >= :inicio";
-            $params[":inicio"] = $fechaInicio . " 00:00:00";
+        // Filtro de fechas
+        if (!empty($fechaInicio) || !empty($fechaFin)) {
+            $rangoFechas = [];
+            if (!empty($fechaInicio)) {
+                $rangoFechas['$gte'] = new UTCDateTime(strtotime($fechaInicio) * 1000);
+            }
+            if (!empty($fechaFin)) {
+                $rangoFechas['$lte'] = new UTCDateTime(strtotime($fechaFin . " 23:59:59") * 1000);
+            }
+            $match['fechaM'] = $rangoFechas;
         }
 
-        if (!empty($fechaFin)) {
-            $sql .= " AND m.fechaM <= :fin";
-            $params[":fin"] = $fechaFin . " 23:59:59";
-        }
-
+        // Filtro de Producto
         if (!empty($idProducto)) {
-            $sql .= " AND m.idProducto = :prod";
-            $params[":prod"] = $idProducto;
+            $match['idProducto'] = new ObjectId($idProducto);
         }
 
+        // Filtro de Usuario
         if (!empty($idUsuario)) {
-            $sql .= " AND m.idUsuario = :user";
-            $params[":user"] = $idUsuario;
+            $match['idUsuario'] = new ObjectId($idUsuario);
         }
 
-        $sql .= " ORDER BY m.fechaM DESC";
+        $pipeline = !empty($match) ? [['$match' => $match]] : [];
+        return $this->ejecutarAgregacion($pipeline);
+    }
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
+    /**
+     * Función privada para evitar repetir el código de "JOIN" ($lookup)
+     */
+    private function ejecutarAgregacion($pasosPrevios = []) {
+        $pipeline = array_merge($pasosPrevios, [
+            // Join con Usuario (u.idUsuario = m.idUsuario)
+            [
+                '$lookup' => [
+                    'from' => 'usuario',
+                    'localField' => 'idUsuario',
+                    'foreignField' => '_id',
+                    'as' => 'usuario_info'
+                ]
+            ],
+            // Join con Producto (p.idProducto = m.idProducto)
+            [
+                '$lookup' => [
+                    'from' => 'producto',
+                    'localField' => 'idProducto',
+                    'foreignField' => '_id',
+                    'as' => 'producto_info'
+                ]
+            ],
+            // Descomponer los arrays de los joins para que sean objetos planos
+            ['$unwind' => '$usuario_info'],
+            ['$unwind' => '$producto_info'],
+            // Ordenar por fecha descendente
+            ['$sort' => ['fechaM' => -1]],
+            // Formatear la salida para que sea igual a la que tenías en SQL
+            [
+                '$project' => [
+                    'idMovimiento' => '$_id',
+                    'tipo' => 1,
+                    'cantidad' => 1,
+                    'fechaM' => 1,
+                    'idUsuario' => '$idUsuario',
+                    'nombreU' => '$usuario_info.nombreU',
+                    'nombreP' => '$producto_info.nombreP'
+                ]
+            ]
+        ]);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $cursor = $this->db->movimientos->aggregate($pipeline);
+        return iterator_to_array($cursor);
     }
 }
 ?>

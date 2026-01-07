@@ -1,5 +1,7 @@
 <?php
 require_once "conexion.php";
+// Importamos la clase para manejar IDs de MongoDB
+use MongoDB\BSON\ObjectId;
 
 class modeloAdministrador {
 
@@ -7,81 +9,77 @@ class modeloAdministrador {
 
     public function __construct() {
         $conexion = new Database();
-        $this->db = $conexion->conectar(); // PDO
+        $this->db = $conexion->conectar(); // Ahora es una instancia de MongoDB\Database
     }
 
     // Crear usuario
     public function createUser($nombreU, $apellidoU, $correo, $pass) {
         $hashedPass = password_hash($pass, PASSWORD_DEFAULT);
 
-        $sql = "INSERT INTO usuario (nombreU, apellidoU, correo, pass) 
-                VALUES (:nombreU, :apellidoU, :correo, :pass)";
-
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            ":nombreU"   => $nombreU,
-            ":apellidoU" => $apellidoU,
-            ":correo"    => $correo,
-            ":pass"      => $hashedPass
-        ]);
+        try {
+            // insertOne reemplaza al INSERT INTO
+            $resultado = $this->db->usuario->insertOne([
+                "nombreU"   => $nombreU,
+                "apellidoU" => $apellidoU,
+                "correo"    => $correo,
+                "pass"      => $hashedPass,
+                "esAdmin"   => 0 // Valor por defecto
+            ]);
+            return $resultado->getInsertedCount() > 0;
+        } catch (Exception $e) {
+            error_log("Error createUser: " . $e->getMessage());
+            return false;
+        }
     }
 
     // Read usuario
     public function readUser() {
-        $sql = "SELECT idUsuario, nombreU, apellidoU, correo, pass, esAdmin FROM usuario";
-        $stmt = $this->db->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // find() equivale a SELECT. iterator_to_array lo convierte en el formato que tus vistas ya usan.
+        $usuarios = $this->db->usuario->find();
+        return iterator_to_array($usuarios);
     }
 
     // Actualizar usuario
     public function updateUser($idUsuario, $nombreU, $apellidoU, $correo, $pass) {
-        // Si envían password nuevo → se actualiza
+        $updateData = [
+            "nombreU"   => $nombreU,
+            "apellidoU" => $apellidoU,
+            "correo"    => $correo
+        ];
+
+        // Si envían password nuevo, lo hasheamos y agregamos al array de actualización
         if (!empty($pass)) {
-            $hashed = password_hash($pass, PASSWORD_DEFAULT);
-            $sql = "UPDATE usuario 
-                    SET nombreU=:nombreU, apellidoU=:apellidoU, correo=:correo, pass=:pass 
-                    WHERE idUsuario=:id";
-            $params = [
-                ":nombreU" => $nombreU,
-                ":apellidoU" => $apellidoU,
-                ":correo" => $correo,
-                ":pass" => $hashed,
-                ":id" => $idUsuario
-            ];
-        } 
-        // Si NO envían password → se deja igual
-        else {
-            $sql = "UPDATE usuario 
-                    SET nombreU=:nombreU, apellidoU=:apellidoU, correo=:correo
-                    WHERE idUsuario=:id";
-            $params = [
-                ":nombreU" => $nombreU,
-                ":apellidoU" => $apellidoU,
-                ":correo" => $correo,
-                ":id" => $idUsuario
-            ];
+            $updateData["pass"] = password_hash($pass, PASSWORD_DEFAULT);
         }
 
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute($params);
+        try {
+            // updateOne reemplaza al UPDATE ... WHERE
+            $resultado = $this->db->usuario->updateOne(
+                ["_id" => new ObjectId($idUsuario)], // Filtro por ID
+                ['$set' => $updateData]             // Datos a actualizar
+            );
+            return $resultado->getModifiedCount() >= 0; 
+        } catch (Exception $e) {
+            error_log("Error updateUser: " . $e->getMessage());
+            return false;
+        }
     }
 
     // Eliminar usuario
     public function deleteUser($idUsuario) {
-        $this->db->beginTransaction();
+        // En MongoDB Atlas (tier gratuito), no solemos usar transacciones complejas.
+        // Ejecutamos las eliminaciones secuencialmente.
         try {
-            $sqlMov = "DELETE FROM movimientos WHERE idUsuario = :id";
-            $stmtMov = $this->db->prepare($sqlMov);
-            $stmtMov->execute([":id" => $idUsuario]);
+            $idObj = new ObjectId($idUsuario);
+
+            // Eliminar movimientos del usuario
+            $this->db->movimientos->deleteMany(["idUsuario" => $idObj]);
             
-            $sqlUser = "DELETE FROM usuario WHERE idUsuario = :id";
-            $stmtUser = $this->db->prepare($sqlUser);
-            $stmtUser->execute([":id" => $idUsuario]);
+            // Eliminar el usuario
+            $resultado = $this->db->usuario->deleteOne(["_id" => $idObj]);
             
-            $this->db->commit();
-            return true;
-        } catch (PDOException $e) {
-            $this->db->rollBack();
+            return $resultado->getDeletedCount() > 0;
+        } catch (Exception $e) {
             error_log("Error deleteUser: " . $e->getMessage());
             return false;
         }

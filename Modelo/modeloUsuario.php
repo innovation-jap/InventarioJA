@@ -1,65 +1,75 @@
 <?php
 require_once __DIR__ . "/conexion.php";
+use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\UTCDateTime;
 
 class modeloUsuario {
     private $db;
 
     public function __construct() {
         $database = new Database();
-        $this->db = $database->conectar(); // Conexión PDO
+        $this->db = $database->conectar(); // Ahora es la instancia de MongoDB\Database
     }
-        public function buscarPorNombreU(string $nombreU): ?array {
-        $sql = "SELECT * FROM usuario WHERE nombreU = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$nombreU]);
 
-        $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res ?: null;
+    /* ====================================================
+       BUSCAR USUARIO POR NOMBRE (Para el Login)
+       ==================================================== */
+    public function buscarPorNombreU(string $nombreU): ?array {
+        // findOne reemplaza a SELECT * ... LIMIT 1
+        $res = $this->db->usuario->findOne(['nombreU' => $nombreU]);
+        return $res ? (array)$res : null;
     }
 
     /* ====================================================
        BUSCAR USUARIO POR CORREO
        ==================================================== */
     public function buscarPorCorreo(string $correo): ?array {
-        $sql  = "SELECT idUsuario FROM usuario WHERE correo = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$correo]);
-
-        $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res ?: null;
+        $res = $this->db->usuario->findOne(
+            ['correo' => $correo],
+            ['projection' => ['_id' => 1]] // Solo traemos el ID para optimizar
+        );
+        return $res ? (array)$res : null;
     }
 
     /* ====================================================
        GUARDAR TOKEN PARA RESET PASSWORD
        ==================================================== */
-    public function guardarTokenReset(int $idUsuario, string $token, string $expira): void {
-        $sql = "UPDATE usuario SET reset_token = ?, reset_expires = ? WHERE idUsuario = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$token, $expira, $idUsuario]);
+    public function guardarTokenReset($idUsuario, string $token, string $expira): void {
+        // Convertimos la fecha de expiración a objeto UTCDateTime de MongoDB
+        $fechaExpira = new UTCDateTime(strtotime($expira) * 1000);
+
+        $this->db->usuario->updateOne(
+            ['_id' => new ObjectId($idUsuario)],
+            ['$set' => [
+                'reset_token' => $token,
+                'reset_expires' => $fechaExpira
+            ]]
+        );
     }
 
     /* ====================================================
        BUSCAR USUARIO POR TOKEN
        ==================================================== */
     public function buscarPorToken(string $token): ?array {
-        $sql  = "SELECT idUsuario, reset_expires FROM usuario WHERE reset_token = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$token]);
-
-        $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res ?: null;
+        $res = $this->db->usuario->findOne(
+            ['reset_token' => $token],
+            ['projection' => ['_id' => 1, 'reset_expires' => 1]]
+        );
+        return $res ? (array)$res : null;
     }
 
     /* ====================================================
        ACTUALIZAR PASSWORD Y LIMPIAR TOKEN
        ==================================================== */
-    public function actualizarPassword(int $idUsuario, string $hash): void {
-        $sql = "UPDATE usuario
-                SET pass = ?, reset_token = NULL, reset_expires = NULL
-                WHERE idUsuario = ?";
-
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$hash, $idUsuario]);
+    public function actualizarPassword($idUsuario, string $hash): void {
+        $this->db->usuario->updateOne(
+            ['_id' => new ObjectId($idUsuario)],
+            ['$set' => [
+                'pass' => $hash,
+                'reset_token' => null,
+                'reset_expires' => null
+            ]]
+        );
     }
 }
 ?>
