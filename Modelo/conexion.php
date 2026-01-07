@@ -1,35 +1,31 @@
 <?php
+// Importante: Cargar el autoload de Composer para que PHP encuentre la librería de MongoDB
+require_once __DIR__ . '/../vendor/autoload.php';
+
 class Database {
-    private $host;
+    private $uri;
     private $dbname;
-    private $user;
-    private $pass;
-    private $port;
     public $conn;
 
     public function __construct() {
-        // Render / AWS usan variables de entorno
-        $this->host   = getenv("DB_HOST") ?: "localhost";
+        // En Render configurarás la variable MONGO_URI con tu cadena de Atlas
+        // En DB_NAME pondrás el nombre de tu base de datos (ej. "inventario")
+        $this->uri    = getenv("MONGO_URI") ?: "mongodb://localhost:27017";
         $this->dbname = getenv("DB_NAME") ?: "inventario";
-        $this->user   = getenv("DB_USER") ?: "root";
-        $this->pass   = getenv("DB_PASS") ?: "";
-        $this->port   = getenv("DB_PORT") ?: "3307";
     }
 
     public function conectar() {
         try {
-            $this->conn = new PDO(
-                "mysql:host={$this->host};dbname={$this->dbname};port={$this->port};charset=utf8",
-                $this->user,
-                $this->pass
-            );
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        } catch (PDOException $e) {
-            // Detiene la ejecución si falla la conexión a la DB
-            die("Error de conexión: " . $e->getMessage());
+            // Creamos el cliente de MongoDB (Equivalente al new PDO)
+            $client = new \MongoDB\Client($this->uri);
+            
+            // Seleccionamos la base de datos
+            $this->conn = $client->selectDatabase($this->dbname);
+            
+            return $this->conn;
+        } catch (Exception $e) {
+            // Detiene la ejecución si falla la conexión a Atlas
+            die("Error de conexión a MongoDB Atlas: " . $e->getMessage());
         }
-
-        return $this->conn;
     }
 }
