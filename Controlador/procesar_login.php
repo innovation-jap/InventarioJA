@@ -2,24 +2,21 @@
 session_start();
 
 /* ============================================================
- *  Includes
+ * Includes
  * ============================================================ */
-
 require_once __DIR__ . "/../config.php";
 require_once __DIR__ . "/../Modelo/conexion.php";
 require_once __DIR__ . "/../Modelo/modeloUsuario.php";
 
 /* ============================================================
- *  Instanciar modelo con PDO
+ * Instanciar modelo (MongoDB)
  * ============================================================ */
-
-$db            = (new Database())->conectar();
-$modeloUsuario = new modeloUsuario($db);
+// El modelo ya no necesita recibir $db por parámetro, lo hace interno
+$modeloUsuario = new modeloUsuario();
 
 /* ============================================================
- *  Procesar login
+ * Procesar login
  * ============================================================ */
-
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $nombreU = trim($_POST['nombreU'] ?? '');
@@ -30,16 +27,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
-    // Buscar usuario por nombreU
+    // Buscar usuario por nombreU en MongoDB
     $row = $modeloUsuario->buscarPorNombreU($nombreU);
 
+    // Verificamos contraseña
     if ($row && password_verify($pass, $row['pass'])) {
 
-        $_SESSION['idUsuario'] = $row['idUsuario'];
+        // --- CAMBIOS CLAVE PARA MONGODB ---
+        
+        // 1. Convertimos el _id (ObjectId) a string para la sesión
+        $_SESSION['idUsuario'] = (string)$row['_id'];
+        
         $_SESSION['nombreU']   = $row['nombreU'];
-        $_SESSION['esAdmin']   = (bool)$row['esAdmin'];
 
-        if ($row['esAdmin']) {
+        // 2. Nos aseguramos de que esAdmin sea tratado como booleano
+        // (En MongoDB Atlas puede venir como int o bool dependiendo de cómo lo insertaste)
+        $_SESSION['esAdmin']   = (bool)($row['esAdmin'] ?? false);
+
+        // Redirección según rol
+        if ($_SESSION['esAdmin']) {
             header("Location: " . BASE_URL . "Controlador/controladorAdministrador.php?seccion=usuarios");
         } else {
             header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
@@ -47,6 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
+    // Si falla
     header("Location: " . BASE_URL . "index.php?error=incorrecto");
     exit();
 }

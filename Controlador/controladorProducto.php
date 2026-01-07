@@ -4,19 +4,18 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 /* ============================================================
- *  Includes y configuración
+ * Includes y configuración
  * ============================================================ */
-
 require_once __DIR__ . "/../config.php";
 require_once __DIR__ . "/../Modelo/modeloProducto.php";
 require_once __DIR__ . "/../Modelo/modeloMovimientos.php";
 require_once __DIR__ . "/../Modelo/conexion.php";
 
 /* ============================================================
- *  Verificar sesión
+ * Verificar sesión
  * ============================================================ */
-
-$idUsuario = $_SESSION['idUsuario'] ?? 0;
+// En MongoDB el idUsuario en la sesión debe ser el string del _id
+$idUsuario = $_SESSION['idUsuario'] ?? null;
 
 if (!$idUsuario) {
     header("Location: " . BASE_URL . "index.php");
@@ -24,12 +23,11 @@ if (!$idUsuario) {
 }
 
 /* ============================================================
- *  Conexión y modelos (PDO)
+ * Conexión y modelos (MongoDB)
  * ============================================================ */
-
-$db        = (new Database())->conectar();
-$modelo    = new modeloProducto($db);
-$modeloMov = new modeloMovimientos($db);
+// Los modelos ahora gestionan su propia conexión internamente
+$modelo    = new modeloProducto();
+$modeloMov = new modeloMovimientos();
 
 $accion = $_GET['accion'] ?? $_POST['accion'] ?? 'listar';
 $datos  = [];
@@ -46,6 +44,7 @@ if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
     $stock        = (int)($_POST['stock'] ?? 0);
 
     if ($nombreP && $stock >= 0) {
+        // Pasamos el idUsuario (string) al modelo
         $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock);
     }
 
@@ -56,9 +55,9 @@ if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
 /* -------------------- ELIMINAR -------------------- */
 if ($accion === 'eliminar' && isset($_GET['id'])) {
 
-    $idProducto = (int)$_GET['id'];
+    $idProducto = $_GET['id']; // CAMBIO: Ahora es un string (ObjectId)
 
-    if ($idProducto > 0) {
+    if (!empty($idProducto)) {
         $modelo->eliminarProducto($idProducto);
     }
 
@@ -69,12 +68,12 @@ if ($accion === 'eliminar' && isset($_GET['id'])) {
 /* -------------------- EDITAR -------------------- */
 if ($accion === 'editar' && $_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $idProducto   = (int)$_POST['idProducto'];
+    $idProducto   = $_POST['idProducto']; // CAMBIO: String
     $nombreP      = trim($_POST['nombreP'] ?? '');
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
 
-    if ($idProducto > 0 && $nombreP && $stock >= 0) {
+    if (!empty($idProducto) && $nombreP && $stock >= 0) {
         $modelo->actualizarProducto($idProducto, $nombreP, $descripcionP, $stock);
     }
 
@@ -85,11 +84,10 @@ if ($accion === 'editar' && $_SERVER["REQUEST_METHOD"] === "POST") {
 /* -------------------- SALIDA DE PRODUCTO -------------------- */
 if ($accion === 'salida' && $_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $idProducto = (int)$_POST['idProducto'];
+    $idProducto = $_POST['idProducto']; // CAMBIO: String
     $cantidad   = (int)$_POST['cantidad'];
 
-    if ($idProducto > 0 && $cantidad > 0) {
-
+    if (!empty($idProducto) && $cantidad > 0) {
         $stock_actual = $modelo->obtenerStock($idProducto);
 
         if ($cantidad <= $stock_actual) {
@@ -104,10 +102,10 @@ if ($accion === 'salida' && $_SERVER["REQUEST_METHOD"] === "POST") {
 /* -------------------- DEVOLUCIÓN -------------------- */
 if ($accion === 'devolucion' && $_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $idProducto       = (int)$_POST['idProducto'];
+    $idProducto       = $_POST['idProducto']; // CAMBIO: String
     $cantidadDevuelta = (int)$_POST['cantidad'];
 
-    if ($idProducto > 0 && $cantidadDevuelta > 0) {
+    if (!empty($idProducto) && $cantidadDevuelta > 0) {
         $modelo->registrarDevolucion($idUsuario, $idProducto, $cantidadDevuelta);
     }
 
@@ -117,7 +115,6 @@ if ($accion === 'devolucion' && $_SERVER["REQUEST_METHOD"] === "POST") {
 
 /* Formulario devolución (GET) */
 if ($accion === 'devolucion' && $_SERVER["REQUEST_METHOD"] === "GET") {
-
     $datos['productos'] = $modelo->obtenerProductos();
     include __DIR__ . "/../Vista/vistaNuevaDevolucion.php";
     exit();
@@ -149,13 +146,11 @@ switch ($accion) {
         break;
 
     case 'movimientos':
-
         $fechaInicio = $_GET['fecha_inicio'] ?? null;
         $fechaFin    = $_GET['fecha_fin'] ?? null;
-        $idProducto  = $_GET['id_producto'] ?? null;
-        $idUsuarioF  = $_GET['id_usuario'] ?? null;
+        $idProducto  = $_GET['id_producto'] ?? null; // String ObjectId
+        $idUsuarioF  = $_GET['id_usuario'] ?? null;  // String ObjectId
 
-        // listas para filtros
         $datos['productos'] = $modelo->obtenerProductos();
         $datos['usuarios']  = $modelo->obtenerUsuarios();
 
@@ -170,7 +165,6 @@ switch ($accion) {
         break;
 
     case 'exportar':
-
         $fechaInicio = $_GET['fecha_inicio'] ?? null;
         $fechaFin    = $_GET['fecha_fin'] ?? null;
         $idProducto  = $_GET['id_producto'] ?? null;
@@ -201,13 +195,14 @@ switch ($accion) {
 
         foreach ($movimientos as $fila) {
             fputcsv($output, [
-                $fila['idMovimiento'],
-                $fila['idProducto'] ?? '',
+                (string)$fila['idMovimiento'], // Aseguramos que el ObjectId se exporte como texto
+                (string)($fila['idProducto'] ?? ''),
                 $fila['nombreP'],
                 $fila['tipo'],
                 $fila['cantidad'],
                 $fila['nombreU'],
-                $fila['fechaM']
+                // Si fechaM es un objeto UTCDateTime de MongoDB, hay que formatearlo
+                is_object($fila['fechaM']) ? $fila['fechaM']->toDateTime()->format('Y-m-d H:i:s') : $fila['fechaM']
             ], $delimiter);
         }
 

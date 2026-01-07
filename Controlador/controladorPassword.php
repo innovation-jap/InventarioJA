@@ -2,9 +2,8 @@
 session_start();
 
 /* ============================================================
- *  Includes y configuración base
+ * Includes y configuración base
  * ============================================================ */
-
 require_once __DIR__ . "/../config.php";
 require_once __DIR__ . "/../Modelo/modeloUsuario.php";
 require_once __DIR__ . "/../Modelo/conexion.php";
@@ -14,34 +13,29 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 /* ============================================================
- *  Conexión y modelo
+ * Conexión y modelo
  * ============================================================ */
-
-$db            = (new Database())->conectar();
-$modeloUsuario = new modeloUsuario($db);
+// El constructor del modelo ya se encarga de conectar si lo definimos así anteriormente
+$modeloUsuario = new modeloUsuario();
 
 /* ============================================================
- *  Determinar acción
+ * Determinar acción
  * ============================================================ */
-
 $accion = $_GET['accion'] ?? $_POST['accion'] ?? "";
 
 /* ============================================================
  * 1) Mostrar formulario de reseteo
  * ============================================================ */
-
 if ($accion === 'form_reset') {
-
     $token = $_GET['token'] ?? '';
     $user  = $modeloUsuario->buscarPorToken($token);
 
-    if (!$user || strtotime($user['reset_expires']) < time()) {
+    // MongoDB devuelve objetos UTCDateTime, usamos toDateTime() para comparar
+    if (!$user || $user['reset_expires']->toDateTime() < new DateTime()) {
         die("Enlace inválido o expirado");
     }
 
-    // Guardar token actual para la vista
     $current_token = $token;
-
     include __DIR__ . "/../Vista/vistaResetPass.php";
     exit();
 }
@@ -49,9 +43,7 @@ if ($accion === 'form_reset') {
 /* ============================================================
  * 2) Solicitar reseteo (envía correo)
  * ============================================================ */
-
 if ($accion === 'solicitar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $correo = trim($_POST['correo'] ?? '');
     $user   = $modeloUsuario->buscarPorCorreo($correo);
 
@@ -61,35 +53,31 @@ if ($accion === 'solicitar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $token  = bin2hex(random_bytes(32));
-    $expira = date('Y-m-d H:i:s', time() + 3600); // 1 hora
+    // Definimos la expiración (1 hora)
+    $expira = date('Y-m-d H:i:s', time() + 3600); 
 
-    $modeloUsuario->guardarTokenReset($user['idUsuario'], $token, $expira);
+    // Usamos el _id de MongoDB (convertido a string para el modelo)
+    $modeloUsuario->guardarTokenReset((string)$user['_id'], $token, $expira);
 
     $link = BASE_URL . "Controlador/controladorPassword.php?accion=form_reset&token=" . $token;
 
-    // Envío de correo
+    // Envío de correo (Mailtrap u otro servicio según tus env vars)
     try {
         $mail = new PHPMailer(true);
-
         $mail->isSMTP();
         $mail->Host       = getenv('SMTP_HOST') ?: 'sandbox.smtp.mailtrap.io';
         $mail->SMTPAuth   = true;
-        $mail->Username   = getenv('SMTP_USERNAME') ?: 'ca41996aef25d7';
-        $mail->Password   = getenv('SMTP_PASSWORD') ?: '0a791790546af9';
+        $mail->Username   = getenv('SMTP_USERNAME') ?: 'tu_usuario';
+        $mail->Password   = getenv('SMTP_PASSWORD') ?: 'tu_password';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = (int)(getenv('SMTP_PORT') ?: 587);
 
-        $mail->setFrom(
-            getenv('SMTP_FROM_EMAIL') ?: 'no-reply@inventario.local',
-            'Sistema de Inventario'
-        );
-
+        $mail->setFrom(getenv('SMTP_FROM_EMAIL') ?: 'no-reply@inventario.local', 'Sistema de Inventario');
         $mail->addAddress($correo);
-        $mail->Subject = "Restablecer contraseña";
-        $mail->Body    = "Haz clic en el siguiente enlace para cambiar tu contraseña:\n\n" . $link;
+        $mail->Subject = "Restablecer contrasena";
+        $mail->Body    = "Haz clic en el siguiente enlace para cambiar tu contrasena:\n\n" . $link;
 
         $mail->send();
-
     } catch (Exception $e) {
         error_log("Error al enviar correo: " . $mail->ErrorInfo);
         die("Error al enviar correo (verifique logs)");
@@ -102,30 +90,28 @@ if ($accion === 'solicitar' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 /* ============================================================
  * 3) Resetear contraseña
  * ============================================================ */
-
 if ($accion === 'reset' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-
     $token = $_POST['token'] ?? '';
     $pass1 = $_POST['pass1'] ?? '';
     $pass2 = $_POST['pass2'] ?? '';
 
-    // Validación
     if ($pass1 !== $pass2 || strlen($pass1) < 6) {
         $_SESSION['reset_error'] = 'pass_invalida';
-        $current_token           = $token;
-
+        $current_token = $token;
         include __DIR__ . "/../Vista/vistaResetPass.php";
         exit();
     }
 
     $user = $modeloUsuario->buscarPorToken($token);
 
-    if (!$user || strtotime($user['reset_expires']) < time()) {
+    // Comparación de expiración con objeto BSON UTCDateTime
+    if (!$user || $user['reset_expires']->toDateTime() < new DateTime()) {
         die("Enlace inválido o expirado");
     }
 
     $hash = password_hash($pass1, PASSWORD_DEFAULT);
-    $modeloUsuario->actualizarPassword($user['idUsuario'], $hash);
+    // Usamos (string)$user['_id'] para pasar el identificador correcto al modelo
+    $modeloUsuario->actualizarPassword((string)$user['_id'], $hash);
 
     header("Location: " . BASE_URL . "index.php?msg=pass_actualizada");
     exit();

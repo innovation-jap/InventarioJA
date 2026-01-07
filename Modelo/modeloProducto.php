@@ -2,6 +2,7 @@
 require_once __DIR__ . "/conexion.php";
 // Importante para manejar los IDs de MongoDB
 use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\UTCDateTime;
 
 class modeloProducto {
     private $db;
@@ -122,6 +123,29 @@ class modeloProducto {
             $this->db->producto->updateOne(
                 ['_id' => new ObjectId($idProducto)],
                 ['$inc' => ['stock' => -(int)$cantidad]]
+            );
+
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function registrarDevolucion($idUsuario, $idProducto, $cantidad) {
+        try {
+            // 1. Registrar el movimiento de devolución en la colección historial
+            $this->db->movimientos->insertOne([
+                'tipo' => 'devolucion',
+                'idUsuario' => $idUsuario, // Si tu login guarda el ID como string, pásalo directo
+                'idProducto' => new ObjectId($idProducto),
+                'cantidad' => (int)$cantidad,
+                'fecha' => new \MongoDB\BSON\UTCDateTime()
+            ]);
+
+            // 2. Sumar la cantidad al stock (usamos $inc positivo para sumar)
+            $this->db->producto->updateOne(
+                ['_id' => new ObjectId($idProducto)],
+                ['$inc' => ['stock' => (int)$cantidad]]
             );
 
             return true;

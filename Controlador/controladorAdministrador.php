@@ -16,7 +16,7 @@ $baseUrl = "../Controlador/controladorAdministrador.php";
 // Sección solicitada
 $seccion = $_GET['seccion'] ?? 'usuarios';
 
-// Instancia de modelos (ya están migrados a PDO)
+// Instancia de modelos
 $modelo    = new modeloAdministrador();
 $modeloMov = new modeloMovimientos();
 
@@ -50,7 +50,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $seccion === 'usuarios') {
 
     // UPDATE
     if (isset($_POST['update'])) {
-        $idUsuario = (int)($_POST['idUsuario'] ?? 0);
+        // CAMBIO: Eliminamos (int), MongoDB usa strings para el _id
+        $idUsuario = $_POST['idUsuario'] ?? ''; 
         $nombreU   = trim($_POST['nombreU'] ?? '');
         $apellidoU = trim($_POST['apellidoU'] ?? '');
         $correo    = trim($_POST['correo'] ?? '');
@@ -66,7 +67,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $seccion === 'usuarios') {
 
     // DELETE
     if (isset($_POST['delete'])) {
-        $idUsuario = (int)($_POST['idUsuario'] ?? 0);
+        // CAMBIO: Eliminamos (int)
+        $idUsuario = $_POST['idUsuario'] ?? '';
 
         if ($idUsuario) {
             $modelo->deleteUser($idUsuario);
@@ -82,12 +84,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $seccion === 'usuarios') {
    ======================================================== */
 if ($seccion === 'usuarios' && isset($_GET['edit'])) {
 
-    $editId = (int)$_GET['edit'];
+    $editId = $_GET['edit']; // CAMBIO: Es un string (ObjectId)
     $todos  = $modelo->readUser();
 
     foreach ($todos as $u) {
-        if ((int)$u['idUsuario'] === $editId) {
-            $idUsuario = $u['idUsuario'];
+        // CAMBIO: En MongoDB el campo es '_id'. Lo convertimos a string para comparar.
+        if ((string)$u['_id'] === $editId) {
+            $idUsuario = (string)$u['_id'];
             $nombreU   = $u['nombreU'];
             $apellidoU = $u['apellidoU'];
             $correo    = $u['correo'];
