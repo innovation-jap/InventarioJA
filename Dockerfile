@@ -11,4 +11,4 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 RUN a2enmod rewrite
 
 COPY . /var/www/html
-WORKDIR /var/www/html
+WORKDIR /var/www/html   
