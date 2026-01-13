@@ -1,105 +1,106 @@
 <?php
-require_once "conexion.php";
+require_once __DIR__ . "/conexion.php";
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
 
 class modeloMovimientos {
-
     private $db;
 
     public function __construct() {
-        $conexion = new Database();
-        $this->db = $conexion->conectar();
+        $database = new Database();
+        $this->db = $database->conectar();
     }
 
-    /* ===========================
-        OBTENER TODOS LOS MOVIMIENTOS
-    ============================ */
+    /**
+     * Obtiene todos los movimientos cruzando datos con usuarios y productos.
+     */
     public function obtenerMovimientos() {
         return $this->ejecutarAgregacion([]);
     }
 
-    /* ===========================
-        OBTENER MOVIMIENTOS POR USUARIO
-    ============================ */
-    public function obtenerMovimientosPorUsuario($idUsuario) {
-        $filtro = ['$match' => ['idUsuario' => new ObjectId($idUsuario)]];
-        return $this->ejecutarAgregacion([$filtro]);
-    }
-
-    /* ===========================
-        MOVIMIENTOS FILTRADOS
-    ============================ */
+    /**
+     * Obtiene movimientos filtrados por fecha, producto y usuario.
+     */
     public function obtenerMovimientosFiltrados($fechaInicio = null, $fechaFin = null, $idProducto = null, $idUsuario = null) {
-        $match = [];
+        $filters = [];
 
-        // Filtro de fechas
+        // Filtro por rango de fechas
         if (!empty($fechaInicio) || !empty($fechaFin)) {
-            $rangoFechas = [];
+            $dateFilter = [];
             if (!empty($fechaInicio)) {
-                $rangoFechas['$gte'] = new UTCDateTime(strtotime($fechaInicio) * 1000);
+                $dateFilter['$gte'] = new UTCDateTime(strtotime($fechaInicio) * 1000);
             }
             if (!empty($fechaFin)) {
-                $rangoFechas['$lte'] = new UTCDateTime(strtotime($fechaFin . " 23:59:59") * 1000);
+                // Se suma 1 día al final para incluir todo el día seleccionado
+                $dateFilter['$lte'] = new UTCDateTime(strtotime($fechaFin . ' +1 day') * 1000);
             }
-            $match['fechaM'] = $rangoFechas;
+            $filters['fecha'] = $dateFilter;
         }
 
-        // Filtro de Producto
+        // Filtro por Producto (debe ser ObjectId)
         if (!empty($idProducto)) {
-            $match['idProducto'] = new ObjectId($idProducto);
+            $filters['idProducto'] = new ObjectId($idProducto);
         }
 
-        // Filtro de Usuario
+        // Filtro por Usuario (debe ser ObjectId)
         if (!empty($idUsuario)) {
-            $match['idUsuario'] = new ObjectId($idUsuario);
+            $filters['idUsuario'] = new ObjectId($idUsuario);
         }
 
-        $pipeline = !empty($match) ? [['$match' => $match]] : [];
-        return $this->ejecutarAgregacion($pipeline);
+        return $this->ejecutarAgregacion($filters);
     }
 
     /**
-     * Función privada para evitar repetir el código de "JOIN" ($lookup)
+     * Lógica central de Agregación (Equivalente a JOIN en SQL)
      */
-    private function ejecutarAgregacion($pasosPrevios = []) {
-        $pipeline = array_merge($pasosPrevios, [
-            // Join con Usuario (u.idUsuario = m.idUsuario)
-            [
-                '$lookup' => [
-                    'from' => 'usuario',
-                    'localField' => 'idUsuario',
-                    'foreignField' => '_id',
-                    'as' => 'usuario_info'
-                ]
-            ],
-            // Join con Producto (p.idProducto = m.idProducto)
-            [
-                '$lookup' => [
-                    'from' => 'producto',
-                    'localField' => 'idProducto',
-                    'foreignField' => '_id',
-                    'as' => 'producto_info'
-                ]
-            ],
-            // Descomponer los arrays de los joins para que sean objetos planos
-            ['$unwind' => '$usuario_info'],
-            ['$unwind' => '$producto_info'],
-            // Ordenar por fecha descendente
-            ['$sort' => ['fechaM' => -1]],
-            // Formatear la salida para que sea igual a la que tenías en SQL
-            [
-                '$project' => [
-                    'idMovimiento' => '$_id',
-                    'tipo' => 1,
-                    'cantidad' => 1,
-                    'fechaM' => 1,
-                    'idUsuario' => '$idUsuario',
-                    'nombreU' => '$usuario_info.nombreU',
-                    'nombreP' => '$producto_info.nombreP'
-                ]
+    private function ejecutarAgregacion($filters) {
+        $pipeline = [];
+
+        // 1. Aplicar filtros iniciales (WHERE)
+        if (!empty($filters)) {
+            $pipeline[] = ['$match' => $filters];
+        }
+
+        // 2. Unir con la colección de usuarios (JOIN usuario)
+        $pipeline[] = [
+            '$lookup' => [
+                'from' => 'usuario',
+                'localField' => 'idUsuario',
+                'foreignField' => '_id',
+                'as' => 'usuario_info'
             ]
-        ]);
+        ];
+
+        // 3. Unir con la colección de productos (JOIN producto)
+        $pipeline[] = [
+            '$lookup' => [
+                'from' => 'producto',
+                'localField' => 'idProducto',
+                'foreignField' => '_id',
+                'as' => 'producto_info'
+            ]
+        ];
+
+        // 4. Descomponer arreglos de unión (Unwind)
+        // preserveNullAndEmptyArrays permite ver el movimiento aunque el producto/usuario haya sido borrado
+        $pipeline[] = ['$unwind' => ['path' => '$usuario_info', 'preserveNullAndEmptyArrays' => true]];
+        $pipeline[] = ['$unwind' => ['path' => '$producto_info', 'preserveNullAndEmptyArrays' => true]];
+
+        // 5. Proyectar campos finales (SELECT)
+        $pipeline[] = [
+            '$project' => [
+                'idMovimiento' => '$_id',
+                'tipo'         => '$tipo',
+                'cantidad'     => '$cantidad',
+                'fechaM'       => '$fecha',
+                'nombreU'      => '$usuario_info.nombreU',
+                'nombreP'      => '$producto_info.nombreP',
+                'idProducto'   => '$idProducto'
+            ]
+        ];
+
+        // 6. Ordenar por fecha descendente (ORDER BY)
+        $pipeline[] = ['$sort' => ['fechaM' => -1]];
 
         $cursor = $this->db->movimientos->aggregate($pipeline);
         return iterator_to_array($cursor);
