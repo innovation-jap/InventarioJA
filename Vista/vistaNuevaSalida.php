@@ -1,3 +1,17 @@
+<?php 
+// Lógica de inicio de sesión
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (!isset($_SESSION['idUsuario'])) {
+    header("Location: ../index.php");
+    exit();
+}
+
+// Requerimos el controlador para cargar $datos['productos']
+// Nota: El controlador ahora maneja la conexión a MongoDB Atlas
+require_once(__DIR__ . '/../Controlador/controladorProducto.php');
+
+$datos['error'] = $datos['error'] ?? null;
+?>
 <!DOCTYPE html>
 <html lang="es" class="light">
 <head>
@@ -24,45 +38,16 @@
                         "background-dark": "#111621",
                         "ice": "#C3E5F5"
                     },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
                     borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
                 },
             },
         }
     </script>
     <style>
-        .material-symbols-outlined {
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24;
-        }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
     </style>
 </head>
-<?php 
-// Se requiere el controlador para cargar $datos['productos'] y $datos['error']
-require_once('../Controlador/controladorProducto.php');
-
-// Lógica de inicio de sesión (Asegúrate de que esto esté cargado)
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
-if (!isset($_SESSION['idUsuario'])) {
-    header("Location: ../index.php");
-    exit();
-}
-
-// Variables de prueba si no vienen del controlador (BORRAR en producción)
-if (empty($datos['productos'])) {
-    $datos['productos'] = [
-        ['idProducto' => '101', 'nombreP' => 'Laptop Gamer Pro', 'stock' => 15],
-        ['idProducto' => '102', 'nombreP' => 'Monitor 4K', 'stock' => 5],
-        ['idProducto' => '103', 'nombreP' => 'Mousepad XL', 'stock' => 0],
-    ];
-}
-$datos['error'] = $datos['error'] ?? null;
-?>
 <body class="font-display bg-background-light dark:bg-background-dark min-h-screen flex items-start sm:items-center justify-center px-4">
 <div class="w-full max-w-[640px] my-6">
     <header class="flex items-center justify-between whitespace-nowrap border border-ice/70 dark:border-gray-700 bg-startup-white dark:bg-background-dark rounded-t-xl px-6 py-3 shadow-sm">
@@ -72,9 +57,7 @@ $datos['error'] = $datos['error'] ?? null;
             </div>
             <div>
                 <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Registrar salida</h2>
-                <p class="text-xs text-immersive-blue-black/60 dark:text-gray-400">
-                    Actualiza el stock restando unidades.
-                </p>
+                <p class="text-xs text-immersive-blue-black/60 dark:text-gray-400">Actualiza el stock restando unidades.</p>
             </div>
         </div>
         <a href="../Controlador/controladorProducto.php?accion=listar"
@@ -85,21 +68,15 @@ $datos['error'] = $datos['error'] ?? null;
 
     <main class="bg-startup-white dark:bg-background-dark rounded-b-xl shadow-sm border-x border-b border-ice/70 dark:border-gray-700">
         <div class="p-6">
-            <p class="text-immersive-blue-black dark:text-startup-white text-3xl font-black leading-tight tracking-[-0.03em] mb-2">
-                Salida de Inventario
-            </p>
-            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                Selecciona el producto y la cantidad a retirar del stock.
-            </p>
+            <p class="text-immersive-blue-black dark:text-startup-white text-3xl font-black leading-tight tracking-[-0.03em] mb-2">Salida de Inventario</p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">Selecciona el producto y la cantidad a retirar del stock.</p>
 
             <div class="flex flex-col gap-6 bg-background-light dark:bg-gray-800 border border-ice dark:border-gray-700 p-6 sm:p-8 rounded-xl shadow-inner">
                 
                 <?php if (!empty($datos['error'])) : ?>
                     <div class="flex items-start gap-3 rounded-lg bg-red-100 dark:bg-red-900/30 p-4 border border-red-300 dark:border-red-800">
                         <span class="material-symbols-outlined text-red-600 dark:text-red-400 flex-shrink-0">error</span>
-                        <p class="text-red-700 dark:text-red-300 text-sm font-medium">
-                            <?= htmlspecialchars($datos['error']) ?>
-                        </p>
+                        <p class="text-red-700 dark:text-red-300 text-sm font-medium"><?= htmlspecialchars($datos['error']) ?></p>
                     </div>
                 <?php endif; ?>
 
@@ -107,28 +84,25 @@ $datos['error'] = $datos['error'] ?? null;
                     <input type="hidden" name="accion" value="salida" />
 
                     <label class="flex flex-col w-full gap-2">
-                        <p class="text-immersive-blue-black dark:text-startup-white text-xs font-semibold uppercase tracking-wider">
-                            Producto a retirar
-                        </p>
+                        <p class="text-immersive-blue-black dark:text-startup-white text-xs font-semibold uppercase tracking-wider">Producto a retirar</p>
                         <select
                             name="idProducto"
                             id="idProducto"
                             required
-                            class="form-select w-full rounded-lg text-immersive-blue-black dark:text-white 
-                                   focus:outline-0 focus:ring-4 focus:ring-resilient-turquoise/30 
-                                   border-2 border-ice dark:border-gray-600 bg-white dark:bg-gray-700 
-                                   h-12 px-4 text-sm font-medium transition duration-200"
+                            class="form-select w-full rounded-lg text-immersive-blue-black dark:text-white focus:ring-4 focus:ring-resilient-turquoise/30 border-2 border-ice dark:border-gray-600 bg-white dark:bg-gray-700 h-12 px-4 text-sm font-medium transition duration-200"
                         >
                             <option value="">Seleccionar un producto...</option>
                             <?php if (!empty($datos['productos'])) : ?>
-                                <?php foreach ($datos['productos'] as $prod) : ?>
+                                <?php foreach ($datos['productos'] as $prod) : 
+                                    $idStr = (string)$prod['_id']; // MongoDB ObjectID a string
+                                ?>
                                     <option 
-                                        value="<?= htmlspecialchars($prod['idProducto']) ?>" 
-                                        data-stock="<?= htmlspecialchars($prod['stock']) ?>"
-                                        <?= $prod['stock'] == 0 ? 'disabled class="text-red-500 bg-red-50 dark:bg-red-900"' : '' ?>
+                                        value="<?= htmlspecialchars($idStr) ?>" 
+                                        data-stock="<?= htmlspecialchars($prod['stock'] ?? 0) ?>"
+                                        <?= ($prod['stock'] ?? 0) == 0 ? 'disabled class="text-red-500 bg-red-50 dark:bg-red-900"' : '' ?>
                                     >
-                                        <?= htmlspecialchars($prod['nombreP']) ?> 
-                                        (Stock: <?= htmlspecialchars($prod['stock']) ?>)
+                                        <?= htmlspecialchars($prod['nombreP'] ?? 'Producto sin nombre') ?> 
+                                        (Stock: <?= htmlspecialchars($prod['stock'] ?? 0) ?>)
                                     </option>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -145,10 +119,7 @@ $datos['error'] = $datos['error'] ?? null;
                                 placeholder="0"
                                 min="1"
                                 required
-                                class="form-input w-full rounded-lg text-lg text-immersive-blue-black dark:text-white 
-                                       focus:outline-0 focus:ring-4 focus:ring-resilient-turquoise/30 
-                                       border-2 border-ice dark:border-gray-600 bg-white dark:bg-gray-700 
-                                       h-12 px-4 font-bold transition duration-200"
+                                class="form-input w-full rounded-lg text-lg text-immersive-blue-black dark:text-white focus:ring-4 focus:ring-resilient-turquoise/30 border-2 border-ice dark:border-gray-600 bg-white dark:bg-gray-700 h-12 px-4 font-bold transition duration-200"
                             />
                         </label>
                         <label class="flex flex-col flex-1 gap-2">
@@ -158,9 +129,7 @@ $datos['error'] = $datos['error'] ?? null;
                                 id="stockActual"
                                 disabled
                                 placeholder="Selecciona un producto"
-                                class="form-input w-full rounded-lg text-gray-500 dark:text-gray-400 focus:outline-0 focus:ring-0 
-                                       border-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/50 
-                                       h-12 px-4 text-sm cursor-not-allowed"
+                                class="form-input w-full rounded-lg text-gray-500 dark:text-gray-400 border-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800/50 h-12 px-4 text-sm cursor-not-allowed"
                                 value=""
                             />
                         </label>
@@ -168,17 +137,13 @@ $datos['error'] = $datos['error'] ?? null;
 
                     <div class="flex flex-col-reverse sm:flex-row gap-4 justify-end pt-5 border-t border-ice dark:border-gray-700 mt-2">
                         <a href="../Controlador/controladorProducto.php?accion=listar"
-                           class="w-full sm:w-auto flex items-center justify-center gap-2 h-10 px-5 rounded-full 
-                                  bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 text-sm font-bold 
-                                  hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">
+                           class="w-full sm:w-auto flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200 text-sm font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition shadow-sm">
                             <span class="material-symbols-outlined text-base">close</span>
                             <span>Cancelar</span>
                         </a>
                         <button
                             type="submit"
-                            class="w-full sm:w-auto flex items-center justify-center gap-2 h-10 px-5 rounded-full 
-                                   bg-resilient-turquoise text-startup-white text-sm font-bold 
-                                   hover:bg-immersive-blue-black transition shadow-md">
+                            class="w-full sm:w-auto flex items-center justify-center gap-2 h-10 px-5 rounded-full bg-resilient-turquoise text-startup-white text-sm font-bold hover:bg-immersive-blue-black transition shadow-md">
                             <span class="material-symbols-outlined text-base">check_circle</span>
                             <span>Confirmar salida</span>
                         </button>
@@ -186,33 +151,16 @@ $datos['error'] = $datos['error'] ?? null;
                 </form>
             </div>
         </div>
-
-        <footer class="sm:hidden flex flex-col items-center justify-between gap-3 px-6 pb-4 pt-3 bg-background-light dark:bg-gray-800/60 rounded-b-xl border-t border-ice/70 dark:border-gray-700">
-            <a href="../Controlador/controladorProducto.php?accion=listar"
-               class="w-full flex min-w-[120px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-9 px-4 bg-startup-white dark:bg-gray-700 text-immersive-blue-black dark:text-white text-sm font-bold gap-2 border border-ice dark:border-gray-600 hover:bg-ice/70 dark:hover:bg-gray-600">
-                <span class="material-symbols-outlined text-base">arrow_back</span>
-                <span class="truncate">Volver a inventario</span>
-            </a>
-        </footer>
     </main>
 </div>
 
 <script>
-    // Lógica JavaScript para actualizar stock (SIN CAMBIOS)
+    // Lógica JavaScript para actualizar stock
     document.getElementById('idProducto').addEventListener('change', function () {
         const selectedOption = this.options[this.selectedIndex];
         const stock = selectedOption.getAttribute('data-stock') || '';
         document.getElementById('stockActual').value = stock;
     });
-
-    // Código comentado original, se mantiene por si el usuario quiere activarlo.
-    /*window.addEventListener('DOMContentLoaded', () => {
-        const select = document.getElementById('idProducto');
-        if (select.options.length > 1) {
-            select.selectedIndex = 1;
-            select.dispatchEvent(new Event('change'));
-        }
-    });*/
 </script>
 </body>
 </html>
