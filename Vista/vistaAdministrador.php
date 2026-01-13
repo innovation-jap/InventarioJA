@@ -196,13 +196,13 @@ if (empty($_SESSION['esAdmin'])) {
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 text-truncate">
                         <?= !empty($idUsuario)
-                            ? "Editar usuario ID: " . htmlspecialchars($idUsuario)
+                            ? "Editar usuario ID: " . htmlspecialchars((string)$idUsuario)
                             : "Registrar nuevo usuario" ?>
                     </h5>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="controladorAdministrador.php?seccion=usuarios">
-                        <input type="hidden" name="idUsuario" value="<?= htmlspecialchars($idUsuario ?? '') ?>">
+                        <input type="hidden" name="idUsuario" value="<?= htmlspecialchars((string)($idUsuario ?? '')) ?>">
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -290,9 +290,9 @@ if (empty($_SESSION['esAdmin'])) {
                             <?php if (!empty($usuarios)): ?>
                                 <?php foreach ($usuarios as $usuario): ?>
                                     <tr>
-                                        <td><strong><?= htmlspecialchars($usuario['idUsuario']) ?></strong></td>
-                                        <td><?= htmlspecialchars($usuario['nombreU'] . ' ' . $usuario['apellidoU']) ?></td>
-                                        <td><?= htmlspecialchars($usuario['correo']) ?></td>
+                                        <td><strong><?= htmlspecialchars((string)($usuario['_id'] ?? '')) ?></strong></td>
+                                        <td><?= htmlspecialchars(($usuario['nombreU'] ?? '') . ' ' . ($usuario['apellidoU'] ?? '')) ?></td>
+                                        <td><?= htmlspecialchars($usuario['correo'] ?? '') ?></td>
                                         <td>
                                             <?php $esAdmin = !empty($usuario['esAdmin']); ?>
                                             <span class="badge rounded-pill <?= $esAdmin ? 'badge-admin' : 'bg-info text-dark' ?>">
@@ -302,12 +302,12 @@ if (empty($_SESSION['esAdmin'])) {
                                         <td class="text-end">
                                             <?php if (!$esAdmin): ?>
                                                 <div class="btn-group btn-group-sm" role="group">
-                                                    <a href="controladorAdministrador.php?seccion=usuarios&edit=<?= $usuario['idUsuario'] ?>" class="btn btn-outline-info" title="Editar">
+                                                    <a href="controladorAdministrador.php?seccion=usuarios&edit=<?= (string)$usuario['_id'] ?>" class="btn btn-outline-info" title="Editar">
                                                         <span class="material-icons-outlined" style="font-size: 18px;">edit</span>
                                                     </a>
                                                     <form method="POST" class="d-inline"
-                                                          onsubmit="return confirm('¿Eliminar a <?= htmlspecialchars($usuario['nombreU']) ?>?');">
-                                                        <input type="hidden" name="idUsuario" value="<?= $usuario['idUsuario'] ?>">
+                                                          onsubmit="return confirm('¿Eliminar a <?= htmlspecialchars($usuario['nombreU'] ?? 'este usuario') ?>?');">
+                                                        <input type="hidden" name="idUsuario" value="<?= (string)$usuario['_id'] ?>">
                                                         <button type="submit" name="delete" class="btn btn-outline-danger" title="Eliminar">
                                                             <span class="material-icons-outlined" style="font-size: 18px;">delete</span>
                                                         </button>
@@ -320,9 +320,7 @@ if (empty($_SESSION['esAdmin'])) {
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">No hay usuarios registrados</td>
-                                </tr>
+                                <tr><td colspan="5" class="text-center text-muted py-4">No hay usuarios registrados</td></tr>
                             <?php endif; ?>
                             </tbody>
                         </table>
@@ -331,7 +329,6 @@ if (empty($_SESSION['esAdmin'])) {
             </div>
 
         <?php elseif ($seccion === 'movimientos'): ?>
-
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="page-title mb-0">Movimientos de inventario por usuario</h2>
             </div>
@@ -357,33 +354,37 @@ if (empty($_SESSION['esAdmin'])) {
                             <?php if (!empty($movimientos)): ?>
                                 <?php foreach ($movimientos as $m): ?>
                                     <tr>
-                                        <td><strong><?= htmlspecialchars($m['idMovimiento']) ?></strong></td>
+                                        <td><strong><?= htmlspecialchars((string)($m['idMovimiento'] ?? '')) ?></strong></td>
                                         <td><?= htmlspecialchars($m['nombreU'] ?? 'N/A') ?></td>
                                         <td><?= htmlspecialchars($m['nombreP'] ?? 'N/A') ?></td>
                                         <td>
                                             <?php
-                                                $tipo = htmlspecialchars($m['tipo']);
-                                                $badgeClass = ($tipo === 'ENTRADA') ? 'bg-success' : 'bg-danger';
+                                                $tipo = htmlspecialchars($m['tipo'] ?? 'N/A');
+                                                $badgeClass = (strtoupper($tipo) === 'ENTRADA') ? 'bg-success' : 'bg-danger';
                                             ?>
                                             <span class="badge <?= $badgeClass ?>"><?= $tipo ?></span>
                                         </td>
-                                        <td><?= htmlspecialchars($m['cantidad']) ?></td>
-                                        <td><?= htmlspecialchars($m['fechaM']) ?></td>
+                                        <td><?= htmlspecialchars($m['cantidad'] ?? 0) ?></td>
+                                        <td>
+                                            <?php 
+                                            // Manejo de fecha si viene como objeto UTCDateTime
+                                            if (isset($m['fechaM']) && is_object($m['fechaM'])) {
+                                                echo $m['fechaM']->toDateTime()->format('Y-m-d H:i:s');
+                                            } else {
+                                                echo htmlspecialchars($m['fechaM'] ?? 'N/A');
+                                            }
+                                            ?>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted py-4">
-                                        No hay movimientos registrados
-                                    </td>
-                                </tr>
+                                <tr><td colspan="6" class="text-center text-muted py-4">No hay movimientos registrados</td></tr>
                             <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-
         <?php endif; ?>
     </main>
 </div>
