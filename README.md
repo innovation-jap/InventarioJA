@@ -1,57 +1,51 @@
-InventarioJA
-Sistema de gestión de inventarios desarrollado bajo la arquitectura MVC (Modelo-Vista-Controlador). El proyecto está diseñado para ser ligero, modular y fácil de desplegar mediante contenedores.
+<h1 align="center">📦 InventarioJA</h1>
 
-🚀 Tecnologías Utilizadas
-El proyecto utiliza un stack basado en PHP y herramientas de gestión de dependencias y despliegue:
+<p align="center">
+  Sistema modular para la gestión de inventarios, diseñado para el control eficiente de stock, movimientos y reportes de negocios, integrado con bases de datos en la nube.
+</p>
 
-Lenguaje: PHP 8.x (Principal, 93.5%)
+<p align="center">
+  <img src="https://img.shields.io/badge/PHP-8.x-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP" />
+  <img src="https://img.shields.io/badge/AtlasDB-MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="AtlasDB" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Architecture-MVC-FFD700?style=for-the-badge" alt="MVC" />
+</p>
 
-Gestor de Dependencias: Composer
+---
 
-Arquitectura: MVC (Separación de lógica de negocio, datos e interfaz)
+## 🚀 Sobre el Proyecto
 
-Contenerización: Docker (Uso de Dockerfile para entornos estandarizados)
+- 🧩 **Arquitectura:** Implementado bajo el patrón **MVC** para una separación clara de responsabilidades.
+- ☁️ **Base de Datos:** Conexión configurada para **AtlasDB**, permitiendo almacenamiento escalable y persistencia en la nube.
+- 🐳 **Despliegue:** Configuración lista para entornos de contenedores mediante **Docker**.
+- 🛠️ **Mantenibilidad:** Código estructurado y modular que facilita la implementación de nuevas funcionalidades.
 
-Base de Datos: Configuración compatible con PDO (definida en config.php)
+---
 
-📁 Estructura del Proyecto
-Plaintext
-InventarioJA/
-├── Controlador/    # Lógica de control y manejo de peticiones
-├── Modelo/         # Interacción con la base de datos y entidades
-├── Vista/          # Interfaz de usuario (HTML/CSS)
-├── vendor/         # Dependencias instaladas vía Composer
-├── config.php      # Configuración global del sistema y BD
-├── index.php       # Punto de entrada de la aplicación
-└── Dockerfile      # Configuración para despliegue con Docker
-🛠️ Instalación y Configuración
-Requisitos previos
-PHP >= 8.0
+## 🧰 Tech Stack
 
-Composer
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=php,mongodb,docker,git,github,vscode" alt="PHP, MongoDB, Docker, Git, GitHub, VS Code" />
+</p>
 
-Servidor web (Apache/Nginx) o Docker
+- **Backend:** PHP 8.x (Core del sistema).
+- **Base de Datos:** AtlasDB (MongoDB Atlas) para gestión de datos NoSQL/Cloud.
+- **Gestión de Dependencias:** Composer.
+- **Infraestructura:** Docker (Dockerfile incluido).
 
-Pasos para replicar el entorno:
-Clonar el repositorio:
+---
 
-Bash
-git clone https://github.com/innovation-jap/InventarioJA.git
-cd InventarioJA
-Instalar dependencias:
+## 📁 Estructura de Carpetas
 
-Bash
-composer install
-Configurar Base de Datos: Edita el archivo config.php con tus credenciales locales (Host, Usuario, Password, DB).
+- `Controlador/`: Gestión de la lógica de las peticiones.
+- `Modelo/`: Interacción con AtlasDB y reglas de negocio.
+- `Vista/`: Interfaz de usuario y presentación.
+- `config.php`: Archivo centralizado para la URI de conexión a AtlasDB y variables globales.
 
-Levantar con Docker (Opcional):
+---
 
-Bash
-docker build -t inventario-ja .
-docker run -p 8080:80 inventario-ja
-📝 Características
-Gestión de productos/artículos.
+## ⚙️ Instalación y Configuración
 
-Estructura escalable gracias al patrón MVC.
-
-Listo para ser desplegado en la nube mediante Docker.
+1. **Clonar el repositorio:**
+   ```bash
+   git clone [https://github.com/innovation-jap/InventarioJA.git](https://github.com/innovation-jap/InventarioJA.git)
