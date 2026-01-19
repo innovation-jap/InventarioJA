@@ -185,12 +185,15 @@ switch ($accion) {
         header('Content-Disposition: attachment; filename=movimientos_inventario.csv');
 
         $output    = fopen('php://output', 'w');
+        // Usamos UTF-8 BOM para que Excel reconozca los acentos correctamente
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
         $delimiter = ';';
 
+        // CABECERA: Añadimos 'Ubicación'
         fputcsv($output, [
             'ID Movimiento',
-            'ID Producto',
             'Nombre del Producto',
+            'Ubicación', // <--- NUEVA COLUMNA
             'Tipo',
             'Cantidad',
             'Usuario',
@@ -199,21 +202,16 @@ switch ($accion) {
 
         foreach ($movimientos as $fila) {
             fputcsv($output, [
-                (string)$fila['idMovimiento'], // Aseguramos que el ObjectId se exporte como texto
-                (string)($fila['idProducto'] ?? ''),
-                $fila['nombreP'],
-                $fila['tipo'],
+                (string)$fila['idMovimiento'],
+                $fila['nombreP'] ?? 'N/A',
+                $fila['almacen'] ?? 'No asignado', // <--- NUEVO DATO
+                ucfirst($fila['tipo'] ?? 'N/A'),
                 $fila['cantidad'],
-                $fila['nombreU'],
-                // Si fechaM es un objeto UTCDateTime de MongoDB, hay que formatearlo
-                is_object($fila['fechaM']) ? $fila['fechaM']->toDateTime()->format('Y-m-d H:i:s') : $fila['fechaM']
+                $fila['nombreU'] ?? 'N/A',
+                is_object($fila['fechaM']) ? $fila['fechaM']->toDateTime()->format('d/m/Y H:i:s') : $fila['fechaM']
             ], $delimiter);
         }
 
         fclose($output);
-        exit();
-
-    default:
-        header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
         exit();
 }

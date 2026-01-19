@@ -32,27 +32,27 @@ class modeloProducto {
     /* ===========================
         AGREGAR PRODUCTO + MOVIMIENTO
     ============================ */
-    public function agregarProducto($idUsuario, $nombreP, $descripcionP, $stock) {
+    // CAMBIO: Añadimos $almacen como parámetro
+    public function agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen) {
         try {
             $nuevoProducto = [
-                // CORRECCIÓN: Convertir a ObjectId para relaciones en Atlas
                 'idUsuario' => new ObjectId($idUsuario), 
                 'nombreP' => $nombreP,
                 'descripcionP' => $descripcionP,
                 'stock' => (int)$stock,
+                'almacen' => $almacen, // Ahora sí se guardará el valor
                 'fechaI' => new UTCDateTime()
             ];
             
             $resultado = $this->db->producto->insertOne($nuevoProducto);
             $idProducto = $resultado->getInsertedId();
 
-            // Registrar movimiento inicial
             $this->db->movimientos->insertOne([
                 'tipo' => 'entrada',
-                // CORRECCIÓN: Convertir a ObjectId
                 'idUsuario' => new ObjectId($idUsuario),
                 'idProducto' => $idProducto,
                 'cantidad' => (int)$stock,
+                'comentario' => "Ingreso inicial en $almacen",
                 'fecha' => new UTCDateTime()
             ]);
 
@@ -66,13 +66,15 @@ class modeloProducto {
     /* ===========================
         ACTUALIZAR PRODUCTO
     ============================ */
-    public function actualizarProducto($idProducto, $nombreP, $descripcionP, $stock) {
+    // CAMBIO: Añadimos $almacen para que la edición rápida también lo actualice
+    public function actualizarProducto($idProducto, $nombreP, $descripcionP, $stock, $almacen) {
         $resultado = $this->db->producto->updateOne(
             ['_id' => new ObjectId($idProducto)],
             ['$set' => [
                 'nombreP' => $nombreP,
                 'descripcionP' => $descripcionP,
-                'stock' => (int)$stock
+                'stock' => (int)$stock,
+                'almacen' => $almacen // Permite cambiar el almacén al editar
             ]]
         );
         return $resultado->getModifiedCount() > 0;
@@ -106,7 +108,6 @@ class modeloProducto {
         try {
             $this->db->movimientos->insertOne([
                 'tipo' => $tipo,
-                // CORRECCIÓN: Convertir a ObjectId
                 'idUsuario' => new ObjectId($idUsuario),
                 'idProducto' => new ObjectId($idProducto),
                 'cantidad' => (int)$cantidad,
@@ -131,7 +132,6 @@ class modeloProducto {
         try {
             $this->db->movimientos->insertOne([
                 'tipo' => 'devolucion',
-                // CORRECCIÓN: Convertir a ObjectId
                 'idUsuario' => new ObjectId($idUsuario),
                 'idProducto' => new ObjectId($idProducto),
                 'cantidad' => (int)$cantidad,
