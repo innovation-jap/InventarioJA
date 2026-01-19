@@ -79,11 +79,11 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
 
                 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
                     <div class="flex flex-col gap-1.5 col-span-2 sm:col-span-1">
-                        <label for="id_producto" class="text-immersive-blue-black dark:text-startup-white text-xs font-semibold uppercase">Producto</label>
+                        <label for="id_producto" class="text-xs font-semibold uppercase">Producto</label>
                         <select name="id_producto" id="id_producto" class="form-select rounded-lg text-sm border-gray-300 dark:bg-gray-700 dark:text-white">
                             <option value="">-- Todos --</option>
                             <?php foreach ($datos['productos'] as $producto): 
-                                $idProd = (string)$producto['_id']; // MongoDB ID
+                                $idProd = (string)$producto['_id']; 
                             ?>
                                 <option value="<?= $idProd ?>" <?= $current_id_producto == $idProd ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($producto['nombreP'] ?? '') ?>
@@ -93,7 +93,7 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
                     </div>
 
                     <div class="flex flex-col gap-1.5 col-span-2 sm:col-span-1">
-                        <label for="id_usuario" class="text-immersive-blue-black dark:text-startup-white text-xs font-semibold uppercase">Usuario</label>
+                        <label for="id_usuario" class="text-xs font-semibold uppercase">Usuario</label>
                         <select name="id_usuario" id="id_usuario" class="form-select rounded-lg text-sm border-gray-300 dark:bg-gray-700 dark:text-white">
                             <option value="">-- Todos --</option>
                             <?php foreach ($datos['usuarios'] as $usuario): 
@@ -107,17 +107,17 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
                     </div>
 
                     <div class="flex flex-col gap-1.5 col-span-1">
-                        <label class="text-immersive-blue-black dark:text-startup-white text-xs font-semibold uppercase">Desde</label>
+                        <label class="text-xs font-semibold uppercase">Desde</label>
                         <input type="date" name="fecha_inicio" value="<?= htmlspecialchars($current_fecha_inicio) ?>" class="form-input rounded-lg text-sm border-gray-300 dark:bg-gray-700 dark:text-white">
                     </div>
 
                     <div class="flex flex-col gap-1.5 col-span-1">
-                        <label class="text-immersive-blue-black dark:text-startup-white text-xs font-semibold uppercase">Hasta</label>
+                        <label class="text-xs font-semibold uppercase">Hasta</label>
                         <input type="date" name="fecha_fin" value="<?= htmlspecialchars($current_fecha_fin) ?>" class="form-input rounded-lg text-sm border-gray-300 dark:bg-gray-700 dark:text-white">
                     </div>
                     
                     <div class="col-span-2 lg:col-span-1 self-end">
-                        <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-resilient-turquoise text-startup-white text-sm font-bold hover:bg-immersive-blue-black transition shadow-md">
+                        <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-resilient-turquoise text-white text-sm font-bold hover:bg-immersive-blue-black transition shadow-md">
                             <span class="material-symbols-outlined text-base">search</span>Filtrar
                         </button>
                     </div>
@@ -125,10 +125,10 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
             </form>
 
             <div class="flex flex-col sm:flex-row gap-3 flex-wrap pt-4 border-t border-ice/70 dark:border-gray-800">
-                <a href="../Controlador/controladorProducto.php?accion=listar" class="flex items-center justify-center gap-2 rounded-full h-10 px-4 bg-white text-immersive-blue-black text-sm font-bold border border-ice transition shadow-sm hover:bg-ice/20">
+                <a href="../Controlador/controladorProducto.php?accion=listar" class="flex items-center justify-center gap-2 rounded-full h-10 px-4 bg-white text-immersive-blue-black text-sm font-bold border border-ice shadow-sm hover:bg-ice/20 transition">
                     <span class="material-symbols-outlined text-base">arrow_back</span>Volver a inventario
                 </a>
-                <a href="../Controlador/controladorProducto.php?accion=exportar&<?= htmlspecialchars($filter_query) ?>" class="flex items-center justify-center gap-2 rounded-full h-10 px-4 bg-sustainable-green text-startup-white text-sm font-bold hover:bg-immersive-blue-black transition shadow-sm">
+                <a href="../Controlador/controladorProducto.php?accion=exportar&<?= htmlspecialchars($filter_query) ?>" class="flex items-center justify-center gap-2 rounded-full h-10 px-4 bg-sustainable-green text-white text-sm font-bold hover:bg-immersive-blue-black transition shadow-sm">
                     <span class="material-symbols-outlined text-base">download</span>Exportar CSV
                 </a>
             </div>
@@ -136,11 +136,12 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
 
         <div class="px-6 py-3 flex-1 overflow-x-auto">
             <div class="flex overflow-hidden rounded-xl border border-ice dark:border-gray-700">
-                <table class="min-w-[800px] table-auto w-full"> 
+                <table class="min-w-[900px] table-auto w-full"> 
                     <thead class="bg-ice/60 dark:bg-gray-800">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">ID movimiento</th>
                         <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Producto</th>
+                        <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Ubicación</th>
                         <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Tipo</th>
                         <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Cantidad</th>
                         <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Usuario</th>
@@ -157,11 +158,18 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
                                 <td class="px-4 py-3 text-sm font-mono whitespace-nowrap" title="<?= $idMov ?>">
                                     <?= substr($idMov, -6) ?>...
                                 </td>
-                                <td class="px-4 py-3 text-sm font-medium whitespace-nowrap"><?= htmlspecialchars($fila['nombreP'] ?? 'N/A') ?></td>
+                                <td class="px-4 py-3 text-sm font-medium whitespace-nowrap text-immersive-blue-black dark:text-white">
+                                    <?= htmlspecialchars($fila['nombreP'] ?? 'N/A') ?>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                    <span class="inline-flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-base">location_on</span>
+                                        <?= htmlspecialchars($fila['almacen'] ?? 'N/A') ?>
+                                    </span>
+                                </td>
                                 <td class="px-4 py-3 text-sm whitespace-nowrap">
                                     <?php 
-                                        $badgeStyle = 'bg-red-100 text-red-700';
-                                        $icon = 'arrow_downward';
+                                        $badgeStyle = 'bg-red-100 text-red-700'; $icon = 'arrow_downward';
                                         if ($tipo === 'entrada') { $badgeStyle = 'bg-green-100 text-green-700'; $icon = 'arrow_upward'; }
                                         elseif ($tipo === 'devolucion') { $badgeStyle = 'bg-blue-100 text-blue-700'; $icon = 'undo'; }
                                     ?>
@@ -173,8 +181,8 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
                                 <td class="px-4 py-3 text-sm font-bold whitespace-nowrap <?= $tipo === 'salida' ? 'text-red-700' : 'text-green-700' ?>">
                                     <?= $tipo === 'salida' ? '-' : '+' ?><?= htmlspecialchars($fila['cantidad'] ?? 0) ?>
                                 </td>
-                                <td class="px-4 py-3 text-sm"><?= htmlspecialchars($fila['nombreU'] ?? 'N/A') ?></td>
-                                <td class="px-4 py-3 text-sm">
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300"><?= htmlspecialchars($fila['nombreU'] ?? 'N/A') ?></td>
+                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                                     <?php 
                                         if (isset($fila['fechaM']) && is_object($fila['fechaM'])) {
                                             echo $fila['fechaM']->toDateTime()->format('d/m/Y H:i:s');
@@ -186,7 +194,7 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
-                        <tr><td colspan='6' class='p-8 text-center text-gray-500'>No se encontraron movimientos.</td></tr>
+                        <tr><td colspan='7' class='p-8 text-center text-gray-500'>No se encontraron movimientos registrados.</td></tr>
                     <?php endif; ?>
                     </tbody>
                 </table>

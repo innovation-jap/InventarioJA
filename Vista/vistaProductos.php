@@ -47,7 +47,7 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
     <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .table-row-form-edit { display: contents; }
-        .table-row-form-edit td input { padding: 0.25rem 0.5rem; height: 36px; font-size: 0.875rem; }
+        .table-row-form-edit td input, .table-row-form-edit td select { padding: 0.25rem 0.5rem; height: 36px; font-size: 0.875rem; }
     </style>
 </head>
 <body class="font-display bg-background-light dark:bg-background-dark text-immersive-blue-black dark:text-startup-white min-h-screen">
@@ -85,12 +85,12 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
 
             <div class="px-2 sm:px-4 md:px-6 py-3 flex-1">
                 <div class="overflow-x-auto rounded-xl border border-ice dark:border-gray-700 bg-startup-white dark:bg-background-dark/80">
-                    <table class="w-full min-w-[700px] flex-1">
+                    <table class="w-full min-w-[800px] flex-1">
                         <thead>
                         <tr class="bg-ice/60 dark:bg-gray-800">
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[20%]">Nombre producto</th>
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[10%]">ID producto</th>
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[30%]">Descripción</th>
+                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Ubicación</th>
+                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[25%]">Descripción</th>
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[10%]">Stock</th>
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Fecha ingreso</th>
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Acciones</th>
@@ -99,7 +99,7 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
                         <tbody>
                         <?php if (!empty($datos['productos'])) : ?>
                             <?php foreach ($datos['productos'] as $prod) : 
-                                $idStr = (string)$prod['_id']; // Convertimos el ObjectId a string
+                                $idStr = (string)$prod['_id']; 
                             ?>
                                 <tr class="border-t border-t-ice dark:border-t-gray-700 hover:bg-ice/40 dark:hover:bg-gray-800 transition">
                                     <?php if ($editingId === $idStr) : ?>
@@ -108,7 +108,13 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
                                                 <input type="hidden" name="idProducto" value="<?= htmlspecialchars($idStr) ?>" />
                                                 <input type="text" name="nombreP" value="<?= htmlspecialchars($prod['nombreP'] ?? '') ?>" class="form-input rounded-lg w-full border-ice dark:border-gray-600 bg-startup-white dark:bg-background-dark text-sm" required />
                                             </td>
-                                            <td class="px-4 py-3 text-sm font-mono"><?= htmlspecialchars(substr($idStr, -6)) ?>...</td>
+                                            <td class="px-4 py-3 text-sm">
+                                                <select name="almacen" class="form-select rounded-lg w-full border-ice dark:border-gray-600 bg-startup-white dark:bg-background-dark text-sm" required>
+                                                    <option value="Almacén 1" <?= ($prod['almacen'] ?? '') == 'Almacén 1' ? 'selected' : '' ?>>Almacén 1</option>
+                                                    <option value="Almacén 2" <?= ($prod['almacen'] ?? '') == 'Almacén 2' ? 'selected' : '' ?>>Almacén 2</option>
+                                                    <option value="Sótano" <?= ($prod['almacen'] ?? '') == 'Sótano' ? 'selected' : '' ?>>Sótano</option>
+                                                </select>
+                                            </td>
                                             <td class="px-4 py-3 text-sm">
                                                 <input type="text" name="descripcionP" value="<?= htmlspecialchars($prod['descripcionP'] ?? '') ?>" class="form-input rounded-lg w-full border-ice dark:border-gray-600 bg-startup-white dark:bg-background-dark text-sm" />
                                             </td>
@@ -129,8 +135,11 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
                                         </form>
                                     <?php else : ?>
                                         <td class="px-4 py-3 text-sm font-medium whitespace-nowrap"><?= htmlspecialchars($prod['nombreP'] ?? '') ?></td>
-                                        <td class="px-4 py-3 text-sm font-mono whitespace-nowrap" title="<?= $idStr ?>">
-                                            <?= htmlspecialchars(substr($idStr, -6)) ?>...
+                                        <td class="px-4 py-3 text-sm whitespace-nowrap">
+                                            <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
+                                                <span class="material-symbols-outlined text-base text-resilient-turquoise">location_on</span>
+                                                <?= htmlspecialchars($prod['almacen'] ?? 'No asignado') ?>
+                                            </span>
                                         </td>
                                         <td class="px-4 py-3 text-sm"><?= htmlspecialchars($prod['descripcionP'] ?? '') ?></td>
                                         <td class="px-4 py-3 text-sm whitespace-nowrap">

@@ -42,10 +42,11 @@ if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
     $nombreP      = trim($_POST['nombreP'] ?? '');
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
+    $almacen      = $_POST['almacen'] ?? 'Almacen 1';
 
     if ($nombreP && $stock >= 0) {
         // Pasamos el idUsuario (string) al modelo
-        $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock);
+        $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen);
     }
 
     header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
@@ -68,13 +69,16 @@ if ($accion === 'eliminar' && isset($_GET['id'])) {
 /* -------------------- EDITAR -------------------- */
 if ($accion === 'editar' && $_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $idProducto   = $_POST['idProducto']; // CAMBIO: String
+    $idProducto   = $_POST['idProducto']; 
     $nombreP      = trim($_POST['nombreP'] ?? '');
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
+    // NUEVO: Capturar la nueva ubicación del almacén en la edición
+    $almacen      = $_POST['almacen'] ?? ''; 
 
     if (!empty($idProducto) && $nombreP && $stock >= 0) {
-        $modelo->actualizarProducto($idProducto, $nombreP, $descripcionP, $stock);
+        // CAMBIO: Se añade el parámetro $almacen (asegúrate de que tu modeloProducto->actualizarProducto ahora acepte este 4to parámetro)
+        $modelo->actualizarProducto($idProducto, $nombreP, $descripcionP, $stock, $almacen);
     }
 
     header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");

@@ -125,6 +125,14 @@ require_once('../Controlador/controladorProducto.php');
                                h-12 px-4 font-bold placeholder:text-gray-400 dark:placeholder:text-gray-500 transition duration-200"
                     />
                 </label>
+                <label class="flex flex col w-full gap-2">
+                        <p class="text-immersive-blue-black dark:text-startup-white text-xs font-semibold uppercase tracking-wider"> Almacén</p>
+                        <select name="almacen" required class="form-select w-full rounded-lg border-2 border-ice dark:border-gray-600 bg-white dark:bg-gray-700 h-12 px-4 text-sm font-medium transition duration-200">
+                            <option value="Almacén 1">Almacén 1</option>
+                            <option value="Almacén 2">Almacén 2</option>
+                            <option value="Sótano">Sótano</option>
+                        </select> 
+                </label>
 
                 <div class="flex flex-col-reverse sm:flex-row gap-4 justify-end pt-5 border-t border-ice dark:border-gray-700 mt-2">
                     <a href="../Controlador/controladorProducto.php?accion=listar"
