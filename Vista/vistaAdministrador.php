@@ -194,7 +194,7 @@ if (empty($_SESSION['esAdmin'])) {
                                                     <form method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar usuario?');">
                                                         <input type="hidden" name="idUsuario" value="<?= (string)$u['_id'] ?>">
                                                         <button type="submit" name="delete" class="btn btn-sm btn-outline-danger">
-                                                            <span class="material-symbols-outlined" style="font-size:18px">delete</span>
+                                                            <span class="material-icons-outlined" style="font-size:18px">delete</span>
                                                         </button>
                                                     </form>
                                                 </div>
