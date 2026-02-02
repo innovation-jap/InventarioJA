@@ -184,14 +184,13 @@ $idEdit = $idUsuario ?? null;
                                             </span>
                                         </td>
                                         <td class="text-end">
-                                            <a href="controladorAdministrador.php?seccion=usuarios&edit=<?= (string)$u['_id'] ?>" class="btn btn-sm btn-outline-info">
-                                                
-                                            </a>
                                             <?php if ($u['correo'] !== 'admin@inventario.com'): ?>
+                                                <a href="controladorAdministrador.php?seccion=usuarios&edit=<?= (string)$u['_id'] ?>" class="btn btn-sm btn-outline-info">
+                                                <span class="material-icons-outlined" style="font-size:16px">edit</span>
+                                                 </a>
                                                 <form method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar usuario?');">
                                                     <input type="hidden" name="idUsuario" value="<?= (string)$u['_id'] ?>">
                                                     <button type="submit" name="delete" class="btn btn-sm btn-outline-danger">
-                                                        <span class="material-icons-outlined" style="font-size:16px">edit</span>
                                                         <span class="material-icons-outlined" style="font-size:16px">delete</span>
                                                     </button>
                                                 </form>
