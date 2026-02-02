@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administrador</title>
+    <title>Administrador - Donde Patty</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
@@ -15,23 +15,19 @@
             --sustainable-green: #008B61;
             --ice: #C3E5F5; 
         }
-
         body {
             background-color: #f6f6f8;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             color: var(--immersive-blue-black);
         }
-
         .sidebar {
             background: linear-gradient(180deg, var(--immersive-blue-black), #0c2028);
             width: 260px;
         }
-        
         @media (max-width: 991.98px) {
             .sidebar { display: none !important; }
             main { padding-top: 70px !important; }
         }
-        
         .sidebar .nav-link {
             color: var(--startup-white);
             border-radius: .5rem;
@@ -39,32 +35,26 @@
             transition: all 0.2s;
             padding: 0.75rem 1rem;
         }
-
         .sidebar .nav-link.active, .sidebar .nav-link:hover {
             background-color: var(--resilient-turquoise);
             color: var(--startup-white);
         }
-
         .badge-admin {
             background-color: var(--empowered-yellow) !important;
             color: var(--immersive-blue-black) !important;
         }
-        
         .card { border-radius: 1rem; border: 1px solid rgba(0, 0, 0, 0.05); }
-
         .card-header {
             background-color: var(--ice);
             color: var(--immersive-blue-black);
             font-weight: 600;
             border-radius: 1rem 1rem 0 0 !important;
         }
-
         .btn-primary-brand {
             background-color: var(--resilient-turquoise);
             border-color: var(--resilient-turquoise);
             color: white;
         }
-
         .page-title {
             color: var(--immersive-blue-black);
             border-left: 6px solid var(--resilient-turquoise);
@@ -75,14 +65,18 @@
 </head>
 
 <?php
+// Evitar errores de variables no definidas al cargar la página por primera vez
+$idEdit = $idUsuario ?? null;
+$nombreU = $nombreU ?? '';
+$apellidoU = $apellidoU ?? '';
+$correo = $correo ?? '';
+
 $seccion = $_GET['seccion'] ?? 'usuarios';
 
 if (empty($_SESSION['esAdmin'])) {
     header("Location: ../index.php");
     exit();
 }
-// Variables para edición (asumiendo que vienen del controlador)
-$idEdit = $idUsuario ?? null; 
 ?>
 
 <body>
@@ -122,35 +116,41 @@ $idEdit = $idUsuario ?? null;
 
             <div class="card mb-4 shadow-sm">
                 <div class="card-header">
-                    <?= !empty($idEdit) ? "Editar Usuario" : "Registrar Nuevo Usuario" ?>
+                    <?= !empty($idEdit) ? "Editar Usuario Existente" : "Registrar Nuevo Usuario" ?>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="controladorAdministrador.php?seccion=usuarios">
                         <input type="hidden" name="idUsuario" value="<?= htmlspecialchars((string)($idEdit ?? '')) ?>">
+                        
                         <div class="row">
                             <div class="col-md-3 mb-3">
                                 <label class="form-label small fw-bold text-uppercase">Nombre</label>
-                                <input required type="text" name="nombreU" value="<?= htmlspecialchars($nombreU ?? '') ?>" class="form-control" />
+                                <input required type="text" name="nombreU" value="<?= htmlspecialchars($nombreU) ?>" class="form-control" placeholder="Nombre" />
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label class="form-label small fw-bold text-uppercase">Apellido</label>
-                                <input required type="text" name="apellidoU" value="<?= htmlspecialchars($apellidoU ?? '') ?>" class="form-control" />
+                                <input required type="text" name="apellidoU" value="<?= htmlspecialchars($apellidoU) ?>" class="form-control" placeholder="Apellido" />
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label class="form-label small fw-bold text-uppercase">Correo</label>
-                                <input required type="email" name="correo" value="<?= htmlspecialchars($correo ?? '') ?>" class="form-control" />
+                                <input required type="email" name="correo" value="<?= htmlspecialchars($correo) ?>" class="form-control" placeholder="correo@ejemplo.com" />
                             </div>
                             <div class="col-md-3 mb-3">
                                 <label class="form-label small fw-bold text-uppercase">Pass <?= !empty($idEdit) ? '(Opcional)' : '' ?></label>
-                                <input type="password" name="pass" class="form-control" <?= !empty($idEdit) ? '' : 'required' ?> />
+                                <input type="password" name="pass" class="form-control" placeholder="Min. 6 caracteres" <?= !empty($idEdit) ? '' : 'required' ?> />
                             </div>
                         </div>
+
                         <div class="d-flex gap-2">
-                            <button type="submit" name="<?= !empty($idEdit) ? 'update' : 'add' ?>" class="btn btn-primary-brand">
-                                <?= !empty($idEdit) ? 'Actualizar Datos' : 'Registrar Usuario' ?>
-                            </button>
-                            <?php if(!empty($idEdit)): ?>
-                                <a href="controladorAdministrador.php?seccion=usuarios" class="btn btn-secondary">Cancelar</a>
+                            <?php if (!empty($idEdit)): ?>
+                                <button type="submit" name="update" class="btn btn-primary-brand shadow-sm">
+                                    <span class="material-icons-outlined align-middle me-1">edit</span> Actualizar Datos
+                                </button>
+                                <a href="controladorAdministrador.php?seccion=usuarios" class="btn btn-secondary shadow-sm">Cancelar</a>
+                            <?php else: ?>
+                                <button type="submit" name="add" class="btn btn-primary-brand shadow-sm">
+                                    <span class="material-icons-outlined align-middle me-1">person_add</span> Registrar Usuario
+                                </button>
                             <?php endif; ?>
                         </div>
                     </form>
@@ -161,7 +161,7 @@ $idEdit = $idUsuario ?? null;
                 <div class="card-header">Usuarios registrados</div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
+                        <table class="table table-striped table-hover mb-0 align-middle">
                             <thead>
                                 <tr>
                                     <th>ID</th>
@@ -173,9 +173,11 @@ $idEdit = $idUsuario ?? null;
                             </thead>
                             <tbody>
                             <?php if (!empty($usuarios)): ?>
-                                <?php foreach ($usuarios as $u): ?>
+                                <?php foreach ($usuarios as $u): 
+                                    $esAdminIntocable = ($u['correo'] === 'admin@inventario.com');
+                                ?>
                                     <tr>
-                                        <td><small class="text-muted"><?= htmlspecialchars((string)$u['_id']) ?></small></td>
+                                        <td><small class="text-muted"><?= substr((string)$u['_id'], -6) ?></small></td>
                                         <td><?= htmlspecialchars($u['nombreU'] . ' ' . $u['apellidoU']) ?></td>
                                         <td><?= htmlspecialchars($u['correo']) ?></td>
                                         <td>
@@ -184,18 +186,20 @@ $idEdit = $idUsuario ?? null;
                                             </span>
                                         </td>
                                         <td class="text-end">
-                                            <?php if ($u['correo'] !== 'admin@inventario.com'): ?>
-                                                <a href="controladorAdministrador.php?seccion=usuarios&edit=<?= (string)$u['_id'] ?>" class="btn btn-sm btn-outline-info">
-                                                <span class="material-icons-outlined" style="font-size:16px">edit</span>
-                                                 </a>
-                                                <form method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar usuario?');">
-                                                    <input type="hidden" name="idUsuario" value="<?= (string)$u['_id'] ?>">
-                                                    <button type="submit" name="delete" class="btn btn-sm btn-outline-danger">
-                                                        <span class="material-icons-outlined" style="font-size:16px">delete</span>
-                                                    </button>
-                                                </form>
+                                            <?php if (!$esAdminIntocable): ?>
+                                                <div class="btn-group">
+                                                    <a href="controladorAdministrador.php?seccion=usuarios&edit=<?= (string)$u['_id'] ?>" class="btn btn-sm btn-outline-info">
+                                                        <span class="material-icons-outlined" style="font-size:18px">edit</span>
+                                                    </a>
+                                                    <form method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar usuario?');">
+                                                        <input type="hidden" name="idUsuario" value="<?= (string)$u['_id'] ?>">
+                                                        <button type="submit" name="delete" class="btn btn-sm btn-outline-danger">
+                                                            <span class="material-symbols-outlined" style="font-size:18px">delete</span>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             <?php else: ?>
-                                                <span class="text-muted small ms-2">Protegido</span>
+                                                <span class="text-muted small fw-bold px-2">PROPIETARIO</span>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -214,7 +218,7 @@ $idEdit = $idUsuario ?? null;
             <div class="card shadow-sm border-0">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0">
+                        <table class="table table-striped table-hover mb-0 align-middle">
                             <thead>
                                 <tr>
                                     <th>ID Mov</th>
@@ -232,14 +236,14 @@ $idEdit = $idUsuario ?? null;
                                         <td><strong><?= substr((string)$m['idMovimiento'], -6) ?></strong></td>
                                         <td><?= htmlspecialchars($m['nombreU'] ?? 'N/A') ?></td>
                                         <td><?= htmlspecialchars($m['nombreP'] ?? 'N/A') ?></td>
-                                        <td><span class="text-muted"><?= htmlspecialchars($m['almacen'] ?? 'N/A') ?></span></td>
+                                        <td><span class="text-muted small"><?= htmlspecialchars($m['almacen'] ?? 'N/A') ?></span></td>
                                         <td>
                                             <span class="badge <?= (strtoupper($m['tipo']) === 'ENTRADA') ? 'bg-success' : 'bg-danger' ?>">
-                                                <?= $m['tipo'] ?>
+                                                <?= ucfirst($m['tipo']) ?>
                                             </span>
                                         </td>
-                                        <td><?= $m['cantidad'] ?></td>
-                                        <td><?= is_object($m['fechaM']) ? $m['fechaM']->toDateTime()->format('d/m/Y H:i') : $m['fechaM'] ?></td>
+                                        <td class="fw-bold"><?= $m['cantidad'] ?></td>
+                                        <td><small><?= is_object($m['fechaM']) ? $m['fechaM']->toDateTime()->format('d/m/Y H:i') : $m['fechaM'] ?></small></td>
                                     </tr>
                                 <?php endforeach; endif; ?>
                             </tbody>
