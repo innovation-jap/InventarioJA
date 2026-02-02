@@ -185,7 +185,10 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
                                 <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
                                     <?php 
                                         if (isset($fila['fechaM']) && is_object($fila['fechaM'])) {
-                                            echo $fila['fechaM']->toDateTime()->format('d/m/Y H:i:s');
+                                            $fecha = $fila['fechaM']->toDateTime();
+                                            // Ajustamos a la zona horaria de Perú
+                                            $fecha->setTimezone(new DateTimeZone('America/Lima'));
+                                            echo $fecha->format('d/m/Y H:i:s');
                                         } else {
                                             echo htmlspecialchars($fila['fechaM'] ?? 'N/A');
                                         }
