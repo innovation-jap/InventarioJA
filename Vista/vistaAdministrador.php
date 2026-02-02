@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administrador - Donde Patty</title>
+    <title>Administrador</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
@@ -99,7 +99,7 @@ $idEdit = $idUsuario ?? null;
 <div class="d-flex min-vh-100">
     <aside class="sidebar d-none d-lg-flex flex-column p-3 text-white vh-100 position-sticky top-0">
         <div class="mb-4 text-center">
-            <h4 class="fw-bold">Donde Patty</h4>
+            <h4 class="fw-bold">JA Perú</h4>
             <span class="badge badge-admin">ADMINISTRADOR</span>
         </div>
         <nav class="flex-grow-1">
