@@ -199,10 +199,10 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                             <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                                 <?php for ($i = 1; $i <= $totalPaginas; $i++) : ?>
                                     <a href="?accion=listar&p=<?= $i ?>" 
-                                       class="relative inline-flex items-center px-4 py-2 text-sm font-semibold transition-all
-                                       <?= $i == $paginaActual 
-                                           ? 'z-10 bg-resilient-turquoise text-startup-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-resilient-turquoise' 
-                                           : 'text-immersive-blue-black dark:text-gray-300 ring-1 ring-inset ring-ice dark:ring-gray-700 hover:bg-ice/30 focus:outline-offset-0' ?>">
+                                    class="relative inline-flex items-center px-4 py-2 text-sm font-semibold transition-all
+                                    <?= $i == $paginaActual 
+                                        ? 'z-10 bg-resilient-turquoise text-startup-white' 
+                                        : 'text-immersive-blue-black ring-1 ring-inset ring-ice hover:bg-ice/30' ?>">
                                         <?= $i ?>
                                     </a>
                                 <?php endfor; ?>
