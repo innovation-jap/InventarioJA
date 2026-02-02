@@ -214,4 +214,22 @@ switch ($accion) {
 
         fclose($output);
         exit();
+
+    case 'listar':
+    // Configuración de paginación
+    $porPagina = 10;
+    $paginaActual = isset($_GET['p']) ? (int)$_GET['p'] : 1;
+    if ($paginaActual < 1) $paginaActual = 1;
+    $skip = ($paginaActual - 1) * $porPagina;
+
+    // $options = ['sort' => ['_id' => -1], 'skip' => $skip, 'limit' => $porPagina];
+    $datos['productos'] = $modelo->obtenerProductosPaginados($skip, $porPagina);
+
+    // Calcular total de páginas
+    $totalRegistros = $modelo->contarProductos(); 
+    $datos['totalPaginas'] = ceil($totalRegistros / $porPagina);
+    $datos['paginaActual'] = $paginaActual;
+
+    include __DIR__ . "/../Vista/vistaProductos.php";
+    break;
 }

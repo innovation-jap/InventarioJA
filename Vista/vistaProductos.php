@@ -11,6 +11,10 @@ if (!isset($_SESSION['idUsuario'])) {
 // Lógica de edición compatible con ObjectIDs de MongoDB
 $editingId = isset($_GET['editar']) ? $_GET['editar'] : null;
 $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
+
+// Datos de paginación que vienen del controlador
+$paginaActual = $datos['paginaActual'] ?? 1;
+$totalPaginas = $datos['totalPaginas'] ?? 1;
 ?>
 <!DOCTYPE html>
 <html class="light" lang="es">
@@ -83,16 +87,16 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
                 </a>
             </div>
 
-            <div class="px-2 sm:px-4 md:px-6 py-3 flex-1">
-                <div class="overflow-x-auto rounded-xl border border-ice dark:border-gray-700 bg-startup-white dark:bg-background-dark/80">
-                    <table class="w-full min-w-[800px] flex-1">
+            <div class="px-2 sm:px-4 md:px-6 py-3 flex-1 flex flex-col">
+                <div class="overflow-x-auto rounded-xl border border-ice dark:border-gray-700 bg-startup-white dark:bg-background-dark/80 flex-grow">
+                    <table class="w-full min-w-[800px]">
                         <thead>
                         <tr class="bg-ice/60 dark:bg-gray-800">
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[20%]">Nombre producto</th>
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Ubicación</th>
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[25%]">Descripción</th>
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[10%]">Stock</th>
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Fecha ingreso</th>
+                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Fecha ingreso (Perú)</th>
                             <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Acciones</th>
                         </tr>
                         </thead>
@@ -122,7 +126,7 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
                                                 <input type="number" name="stock" value="<?= htmlspecialchars($prod['stock'] ?? 0) ?>" class="form-input rounded-lg w-full border-ice dark:border-gray-600 bg-startup-white dark:bg-background-dark text-sm" required />
                                             </td>
                                             <td class="px-4 py-3 text-sm">
-                                                 <span class="p-1"><?= is_object($prod['fechaI'] ?? null) ? $prod['fechaI']->toDateTime()->format('d/m/Y') : 'N/A' ?></span>
+                                                 <span class="p-1">No editable</span>
                                             </td>
                                             <td class="px-4 py-3 flex gap-2">
                                                 <button type="submit" class="bg-sustainable-green text-startup-white px-3 py-1 rounded-full hover:bg-immersive-blue-black transition shadow-sm">
@@ -148,8 +152,16 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
                                                 <?= htmlspecialchars($prod['stock'] ?? 0) ?>
                                             </div>
                                         </td>
-                                        <td class="px-4 py-3 text-sm whitespace-nowrap">
-                                            <?= is_object($prod['fechaI'] ?? null) ? $prod['fechaI']->toDateTime()->format('d/m/Y') : 'N/A' ?>
+                                        <td class="px-4 py-3 text-sm whitespace-nowrap font-mono text-gray-500">
+                                            <?php 
+                                                if (isset($prod['fechaI']) && is_object($prod['fechaI'])) {
+                                                    $fecha = $prod['fechaI']->toDateTime();
+                                                    $fecha->setTimezone(new DateTimeZone('America/Lima'));
+                                                    echo $fecha->format('d/m/Y H:i');
+                                                } else {
+                                                    echo 'N/A';
+                                                }
+                                            ?>
                                         </td>
                                         <td class="px-4 py-3 text-sm font-bold whitespace-nowrap">
                                             <div class="flex gap-1">
@@ -159,20 +171,46 @@ $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
                                                 <a href="../Controlador/controladorProducto.php?accion=eliminar&id=<?= urlencode($idStr) ?>" class="p-2 rounded-full hover:bg-red-50 text-red-600 hover:text-red-800 transition" onclick="return confirm('¿Eliminar producto?');" title="Eliminar">
                                                     <span class="material-symbols-outlined text-lg">delete</span>
                                                 </a>
-                                                <a href="../Controlador/controladorProducto.php?accion=devolucion&id=<?= urlencode($idStr) ?>" class="p-2 rounded-full hover:bg-ice text-resilient-turquoise transition" title="Registrar devolución">
-                                                    <span class="material-symbols-outlined text-lg">undo</span>
-                                                </a>
                                             </div>
                                         </td>
                                     <?php endif; ?>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else : ?>
-                            <tr><td colspan='6' class='p-8 text-center text-gray-500'>No hay productos registrados.</td></tr>
+                            <tr><td colspan='6' class='p-8 text-center text-gray-500'>No hay productos registrados en esta página.</td></tr>
                         <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
+
+                <?php if ($totalPaginas > 1) : ?>
+                <div class="flex items-center justify-between border-t border-ice dark:border-gray-700 bg-startup-white dark:bg-background-dark px-4 py-3 sm:px-6 mt-4 rounded-xl shadow-sm">
+                    <div class="flex flex-1 justify-between sm:hidden">
+                        <a href="?accion=listar&p=<?= max(1, $paginaActual - 1) ?>" class="relative inline-flex items-center rounded-md border border-ice bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Anterior</a>
+                        <a href="?accion=listar&p=<?= min($totalPaginas, $paginaActual + 1) ?>" class="relative ml-3 inline-flex items-center rounded-md border border-ice bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Siguiente</a>
+                    </div>
+                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                        <div>
+                            <p class="text-sm text-gray-700 dark:text-gray-400">
+                                Mostrando página <span class="font-bold text-resilient-turquoise"><?= $paginaActual ?></span> de <span class="font-bold"><?= $totalPaginas ?></span>
+                            </p>
+                        </div>
+                        <div>
+                            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                                <?php for ($i = 1; $i <= $totalPaginas; $i++) : ?>
+                                    <a href="?accion=listar&p=<?= $i ?>" 
+                                       class="relative inline-flex items-center px-4 py-2 text-sm font-semibold transition-all
+                                       <?= $i == $paginaActual 
+                                           ? 'z-10 bg-resilient-turquoise text-startup-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-resilient-turquoise' 
+                                           : 'text-immersive-blue-black dark:text-gray-300 ring-1 ring-inset ring-ice dark:ring-gray-700 hover:bg-ice/30 focus:outline-offset-0' ?>">
+                                        <?= $i ?>
+                                    </a>
+                                <?php endfor; ?>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
 
             <footer class="mt-auto flex flex-col sm:flex-row items-center justify-center gap-3 px-6 pb-4 pt-3 bg-background-light dark:bg-gray-800/60 rounded-b-xl border-t border-ice/70 dark:border-gray-700">

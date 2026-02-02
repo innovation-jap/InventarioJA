@@ -148,4 +148,34 @@ class modeloProducto {
             return false;
         }
     }
+
+    /* ============================================================
+        CONTAR TOTAL PARA PAGINACIÓN
+    ============================================================ */
+    public function contarProductos() {
+        // Cuenta todos los documentos en la colección producto
+        return $this->db->producto->countDocuments();
+    }
+
+    /* ============================================================
+        OBTENER PRODUCTOS CON PAGINACIÓN Y ORDEN DESCENDENTE
+    ============================================================ */
+    public function obtenerProductosPaginados($skip, $limit) {
+        try {
+            // Buscamos todos los productos
+            // sort(['_id' => -1]) hace que los más nuevos aparezcan primero
+            // skip() se salta los registros de páginas anteriores
+            // limit() trae solo la cantidad permitida por página
+            $opciones = [
+                'sort'  => ['_id' => -1], 
+                'skip'  => (int)$skip,
+                'limit' => (int)$limit
+            ];
+
+            $cursor = $this->db->producto->find([], $opciones);
+            return iterator_to_array($cursor);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
 }
