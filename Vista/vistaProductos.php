@@ -165,11 +165,20 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                                         </td>
                                         <td class="px-4 py-3 text-sm font-bold whitespace-nowrap">
                                             <div class="flex gap-1">
-                                                <a href="../Controlador/controladorProducto.php?accion=listar&editar=<?= urlencode($idStr) ?>" class="p-2 rounded-full hover:bg-ice text-resilient-turquoise hover:text-immersive-blue-black transition" title="Editar">
+                                                <a href="../Controlador/controladorProducto.php?accion=listar&editar=<?= urlencode($idStr) ?>" 
+                                                class="p-2 rounded-full hover:bg-ice text-resilient-turquoise hover:text-immersive-blue-black transition" title="Editar">
                                                     <span class="material-symbols-outlined text-lg">edit</span>
                                                 </a>
-                                                <a href="../Controlador/controladorProducto.php?accion=eliminar&id=<?= urlencode($idStr) ?>" class="p-2 rounded-full hover:bg-red-50 text-red-600 hover:text-red-800 transition" onclick="return confirm('¿Eliminar producto?');" title="Eliminar">
+                                                
+                                                <a href="../Controlador/controladorProducto.php?accion=eliminar&id=<?= urlencode($idStr) ?>" 
+                                                class="p-2 rounded-full hover:bg-red-50 text-red-600 hover:text-red-800 transition" 
+                                                onclick="return confirm('¿Eliminar producto?');" title="Eliminar">
                                                     <span class="material-symbols-outlined text-lg">delete</span>
+                                                </a>
+                                                
+                                                <a href="../Controlador/controladorProducto.php?accion=devolucion&id=<?= urlencode($idStr) ?>" 
+                                                class="p-2 rounded-full hover:bg-empowered-yellow/20 text-sustainable-green transition" title="Registrar devolución">
+                                                    <span class="material-symbols-outlined text-lg">undo</span>
                                                 </a>
                                             </div>
                                         </td>
