@@ -40,8 +40,7 @@
             padding: 0.75rem 1rem;
         }
 
-        .sidebar .nav-link.active,
-        .sidebar .nav-link:hover {
+        .sidebar .nav-link.active, .sidebar .nav-link:hover {
             background-color: var(--resilient-turquoise);
             color: var(--startup-white);
         }
@@ -51,13 +50,9 @@
             color: var(--immersive-blue-black) !important;
         }
         
-        .card {
-            border-radius: 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
+        .card { border-radius: 1rem; border: 1px solid rgba(0, 0, 0, 0.05); }
 
         .card-header {
-            border-bottom: 0;
             background-color: var(--ice);
             color: var(--immersive-blue-black);
             font-weight: 600;
@@ -67,12 +62,7 @@
         .btn-primary-brand {
             background-color: var(--resilient-turquoise);
             border-color: var(--resilient-turquoise);
-            transition: all 0.2s;
-        }
-
-        .btn-primary-brand:hover {
-            background-color: var(--immersive-blue-black);
-            border-color: var(--immersive-blue-black);
+            color: white;
         }
 
         .page-title {
@@ -81,15 +71,6 @@
             padding-left: .75rem;
             font-weight: 700;
         }
-        
-        .table thead th {
-            font-size: 0.85rem;
-            color: var(--immersive-blue-black);
-            border-bottom: 2px solid var(--ice);
-        }
-        
-        .table tbody tr:hover { background-color: #eaf8ff; }
-        .table th, .table td { vertical-align: middle; }
     </style>
 </head>
 
@@ -100,6 +81,8 @@ if (empty($_SESSION['esAdmin'])) {
     header("Location: ../index.php");
     exit();
 }
+// Variables para edición (asumiendo que vienen del controlador)
+$idEdit = $idUsuario ?? null; 
 ?>
 
 <body>
@@ -107,100 +90,112 @@ if (empty($_SESSION['esAdmin'])) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top d-lg-none">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" href="#">Admin Panel</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNav" aria-controls="offcanvasNav">
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNav">
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>
 </nav>
 
 <div class="d-flex min-vh-100">
-
     <aside class="sidebar d-none d-lg-flex flex-column p-3 text-white vh-100 position-sticky top-0">
-        <div class="mb-4">
-            <h5 class="mb-1 text-uppercase small text-white-50">Panel</h5>
-            <h4 class="mb-1 fw-bold">Administrador</h4>
+        <div class="mb-4 text-center">
+            <h4 class="fw-bold">Donde Patty</h4>
+            <span class="badge badge-admin">ADMINISTRADOR</span>
         </div>
-
         <nav class="flex-grow-1">
-            <a href="../Controlador/controladorAdministrador.php?seccion=usuarios"
-               class="nav-link d-block <?= $seccion === 'usuarios' ? 'active' : '' ?>">
-               <span class="material-icons-outlined me-2" style="font-size: 20px;">group</span> Usuarios
+            <a href="controladorAdministrador.php?seccion=usuarios" class="nav-link <?= $seccion === 'usuarios' ? 'active' : '' ?>">
+                <span class="material-icons-outlined me-2">group</span> Usuarios
             </a>
-            <a href="../Controlador/controladorAdministrador.php?seccion=movimientos"
-               class="nav-link d-block <?= $seccion === 'movimientos' ? 'active' : '' ?>">
-               <span class="material-icons-outlined me-2" style="font-size: 20px;">swap_horiz</span> Movimientos
+            <a href="controladorAdministrador.php?seccion=movimientos" class="nav-link <?= $seccion === 'movimientos' ? 'active' : '' ?>">
+                <span class="material-icons-outlined me-2">swap_horiz</span> Movimientos
             </a>
         </nav>
-
-        <hr class="text-white mt-auto">
-        <a href="../Controlador/controladorCerrarSesion.php" class="btn btn-outline-light w-100">
-            <span class="material-icons-outlined me-2" style="font-size: 20px;">logout</span> Cerrar sesión
-        </a>
+        <hr>
+        <a href="controladorCerrarSesion.php" class="btn btn-outline-light w-100">Cerrar sesión</a>
     </aside>
-    
-    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="offcanvasNav" aria-labelledby="offcanvasNavLabel">
-      <div class="offcanvas-header" style="background-color: var(--immersive-blue-black);">
-        <h5 class="offcanvas-title fw-bold" id="offcanvasNavLabel">ADMINISTRADOR</h5>
-        <button type="button" class="btn-close text-reset btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
-      <div class="offcanvas-body sidebar">
-        <nav class="flex-grow-1">
-            <a href="../Controlador/controladorAdministrador.php?seccion=usuarios"
-               class="nav-link d-block <?= $seccion === 'usuarios' ? 'active' : '' ?>" data-bs-dismiss="offcanvas">
-               <span class="material-icons-outlined me-2" style="font-size: 20px;">group</span> Usuarios
-            </a>
-            <a href="../Controlador/controladorAdministrador.php?seccion=movimientos"
-               class="nav-link d-block <?= $seccion === 'movimientos' ? 'active' : '' ?>" data-bs-dismiss="offcanvas">
-               <span class="material-icons-outlined me-2" style="font-size: 20px;">swap_horiz</span> Movimientos
-            </a>
-        </nav>
-
-        <hr class="text-white mt-auto">
-        <a href="../Controlador/controladorCerrarSesion.php" class="btn btn-outline-light w-100 mt-3">
-            <span class="material-icons-outlined me-2" style="font-size: 20px;">logout</span> Cerrar sesión
-        </a>
-      </div>
-    </div>
 
     <main class="flex-grow-1 p-4">
         <?php if ($seccion === 'usuarios'): ?>
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="page-title mb-0">Gestión de usuarios</h2>
             </div>
-            <div class="card shadow-sm border-0">
-                <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-                    <h5 class="mb-0 text-truncate">Usuarios registrados</h5>
+
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header">
+                    <?= !empty($idEdit) ? "Editar Usuario" : "Registrar Nuevo Usuario" ?>
                 </div>
+                <div class="card-body">
+                    <form method="POST" action="controladorAdministrador.php?seccion=usuarios">
+                        <input type="hidden" name="idUsuario" value="<?= htmlspecialchars((string)($idEdit ?? '')) ?>">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label small fw-bold text-uppercase">Nombre</label>
+                                <input required type="text" name="nombreU" value="<?= htmlspecialchars($nombreU ?? '') ?>" class="form-control" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label small fw-bold text-uppercase">Apellido</label>
+                                <input required type="text" name="apellidoU" value="<?= htmlspecialchars($apellidoU ?? '') ?>" class="form-control" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label small fw-bold text-uppercase">Correo</label>
+                                <input required type="email" name="correo" value="<?= htmlspecialchars($correo ?? '') ?>" class="form-control" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label small fw-bold text-uppercase">Pass <?= !empty($idEdit) ? '(Opcional)' : '' ?></label>
+                                <input type="password" name="pass" class="form-control" <?= !empty($idEdit) ? '' : 'required' ?> />
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" name="<?= !empty($idEdit) ? 'update' : 'add' ?>" class="btn btn-primary-brand">
+                                <?= !empty($idEdit) ? 'Actualizar Datos' : 'Registrar Usuario' ?>
+                            </button>
+                            <?php if(!empty($idEdit)): ?>
+                                <a href="controladorAdministrador.php?seccion=usuarios" class="btn btn-secondary">Cancelar</a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header">Usuarios registrados</div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 align-middle">
-                            <thead style="background-color: var(--ice);">
-                            <tr>
-                                <th class="py-3">ID</th>
-                                <th class="py-3">Nombre Completo</th>
-                                <th class="py-3">Correo</th>
-                                <th class="py-3">Rol</th>
-                                <th class="text-end py-3">Acciones</th>
-                            </tr>
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Correo</th>
+                                    <th>Rol</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
                             </thead>
                             <tbody>
                             <?php if (!empty($usuarios)): ?>
-                                <?php foreach ($usuarios as $usuario): ?>
+                                <?php foreach ($usuarios as $u): ?>
                                     <tr>
-                                        <td><strong><?= htmlspecialchars((string)($usuario['_id'] ?? '')) ?></strong></td>
-                                        <td><?= htmlspecialchars(($usuario['nombreU'] ?? '') . ' ' . ($usuario['apellidoU'] ?? '')) ?></td>
-                                        <td><?= htmlspecialchars($usuario['correo'] ?? '') ?></td>
+                                        <td><small class="text-muted"><?= htmlspecialchars((string)$u['_id']) ?></small></td>
+                                        <td><?= htmlspecialchars($u['nombreU'] . ' ' . $u['apellidoU']) ?></td>
+                                        <td><?= htmlspecialchars($u['correo']) ?></td>
                                         <td>
-                                            <?php $esAdmin = !empty($usuario['esAdmin']); ?>
-                                            <span class="badge rounded-pill <?= $esAdmin ? 'badge-admin' : 'bg-info text-dark' ?>">
-                                                <?= $esAdmin ? 'ADMINISTRADOR' : 'OPERADOR' ?>
+                                            <span class="badge rounded-pill <?= !empty($u['esAdmin']) ? 'badge-admin' : 'bg-info text-dark' ?>">
+                                                <?= !empty($u['esAdmin']) ? 'ADMINISTRADOR' : 'OPERADOR' ?>
                                             </span>
                                         </td>
                                         <td class="text-end">
-                                            <?php if (!$esAdmin): ?>
-                                                <a href="controladorAdministrador.php?seccion=usuarios&edit=<?= (string)$usuario['_id'] ?>" class="btn btn-sm btn-outline-info">Editar</a>
+                                            <a href="controladorAdministrador.php?seccion=usuarios&edit=<?= (string)$u['_id'] ?>" class="btn btn-sm btn-outline-info">
+                                                <span class="material-icons-outlined" style="font-size:16px">edit</span>
+                                            </a>
+                                            <?php if ($u['correo'] !== 'admin@inventario.com'): ?>
+                                                <form method="POST" class="d-inline" onsubmit="return confirm('¿Eliminar usuario?');">
+                                                    <input type="hidden" name="idUsuario" value="<?= (string)$u['_id'] ?>">
+                                                    <button type="submit" name="delete" class="btn btn-sm btn-outline-danger">
+                                                        <span class="material-icons-outlined" style="font-size:16px">delete</span>
+                                                    </button>
+                                                </form>
                                             <?php else: ?>
-                                                <span class="text-muted small">Rol protegido</span>
+                                                <span class="text-muted small ms-2">Protegido</span>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
@@ -214,57 +209,39 @@ if (empty($_SESSION['esAdmin'])) {
 
         <?php elseif ($seccion === 'movimientos'): ?>
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="page-title mb-0">Movimientos de inventario por usuario</h2>
+                <h2 class="page-title mb-0">Historial de movimientos</h2>
             </div>
-
             <div class="card shadow-sm border-0">
-                <div class="card-header">
-                    <h5 class="mb-0 text-truncate">Historial de movimientos detallado</h5>
-                </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 align-middle">
-                            <thead style="background-color: var(--ice);">
-                            <tr>
-                                <th class="py-3">ID Mov</th>
-                                <th class="py-3">Usuario</th>
-                                <th class="py-3">Producto</th>
-                                <th class="py-3">Almacén</th>
-                                <th class="py-3">Tipo</th>
-                                <th class="py-3">Cantidad</th>
-                                <th class="py-3">Fecha</th>
-                            </tr>
+                        <table class="table table-striped table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>ID Mov</th>
+                                    <th>Usuario</th>
+                                    <th>Producto</th>
+                                    <th>Almacén</th>
+                                    <th>Tipo</th>
+                                    <th>Cant.</th>
+                                    <th>Fecha</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            <?php if (!empty($movimientos)): ?>
-                                <?php foreach ($movimientos as $m): ?>
+                                <?php if (!empty($movimientos)): foreach ($movimientos as $m): ?>
                                     <tr>
-                                        <td><strong><?= htmlspecialchars((string)($m['idMovimiento'] ?? '')) ?></strong></td>
+                                        <td><strong><?= substr((string)$m['idMovimiento'], -6) ?></strong></td>
                                         <td><?= htmlspecialchars($m['nombreU'] ?? 'N/A') ?></td>
                                         <td><?= htmlspecialchars($m['nombreP'] ?? 'N/A') ?></td>
                                         <td><span class="text-muted"><?= htmlspecialchars($m['almacen'] ?? 'N/A') ?></span></td>
                                         <td>
-                                            <?php
-                                                $tipo = htmlspecialchars($m['tipo'] ?? 'N/A');
-                                                $badgeClass = (strtoupper($tipo) === 'ENTRADA') ? 'bg-success' : 'bg-danger';
-                                            ?>
-                                            <span class="badge <?= $badgeClass ?>"><?= $tipo ?></span>
+                                            <span class="badge <?= (strtoupper($m['tipo']) === 'ENTRADA') ? 'bg-success' : 'bg-danger' ?>">
+                                                <?= $m['tipo'] ?>
+                                            </span>
                                         </td>
-                                        <td><?= htmlspecialchars($m['cantidad'] ?? 0) ?></td>
-                                        <td>
-                                            <?php 
-                                            if (isset($m['fechaM']) && is_object($m['fechaM'])) {
-                                                echo $m['fechaM']->toDateTime()->format('d/m/Y H:i');
-                                            } else {
-                                                echo htmlspecialchars($m['fechaM'] ?? 'N/A');
-                                            }
-                                            ?>
-                                        </td>
+                                        <td><?= $m['cantidad'] ?></td>
+                                        <td><?= is_object($m['fechaM']) ? $m['fechaM']->toDateTime()->format('d/m/Y H:i') : $m['fechaM'] ?></td>
                                     </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr><td colspan="7" class="text-center text-muted py-4">No hay movimientos registrados</td></tr>
-                            <?php endif; ?>
+                                <?php endforeach; endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -273,7 +250,6 @@ if (empty($_SESSION['esAdmin'])) {
         <?php endif; ?>
     </main>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
