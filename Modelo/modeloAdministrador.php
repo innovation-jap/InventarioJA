@@ -34,7 +34,7 @@ class modeloAdministrador {
 
     // Read usuario
     public function readUser() {
-        // find() equivale a SELECT. iterator_to_array lo convierte en el formato que tus vistas ya usan.
+        // find() equivale a SELECT
         $usuarios = $this->db->usuario->find();
         return iterator_to_array($usuarios);
     }
