@@ -142,9 +142,11 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                                     <button onclick="abrirModalSalida('<?= $idStr ?>')" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-500 hover:text-white transition-all" title="Registrar Salida">
                                         <span class="material-symbols-outlined">trending_down</span>
                                     </button>
-                                    <a href="../Controlador/controladorProducto.php?accion=devolucion&id=<?= urlencode($idStr) ?>" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all" title="Devolución">
+                                    <button onclick="abrirModalDevolucion('<?= $idStr ?>', '<?= htmlspecialchars($prod['nombreP']) ?>')" 
+                                            class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all" 
+                                            title="Devolución">
                                         <span class="material-symbols-outlined">undo</span>
-                                    </a>
+                                    </button>
                                     <a href="?accion=listar&editar=<?= urlencode($idStr) ?>" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary transition-all" title="Editar">
                                         <span class="material-symbols-outlined">edit</span>
                                     </a>
@@ -232,8 +234,46 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
     </div>
 </div>
 
+<div id="modalDevolucion" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="cerrarModalDevolucion()"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white dark:bg-background-dark p-8 shadow-2xl border border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="bg-emerald-500 size-12 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/30">
+                    <span class="material-symbols-outlined !text-2xl font-bold">undo</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Devolución de Stock</h3>
+                    <p class="text-xs text-slate-500">Ingresar unidades devueltas al sistema.</p>
+                </div>
+            </div>
+
+            <form method="POST" action="../Controlador/controladorProducto.php?accion=devolucion" class="space-y-6">
+                <input type="hidden" name="idProducto" id="modalDevId">
+                
+                <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Producto a reponer:</p>
+                    <p id="modalDevNombre" class="font-bold text-slate-900 dark:text-white text-lg">---</p>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-slate-400 tracking-widest mb-2">Unidades que regresan</label>
+                    <input type="number" name="cantidad" min="1" required placeholder="0" 
+                           class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-14 px-4 text-lg font-black text-emerald-500 focus:ring-2 focus:ring-emerald-500/50">
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="cerrarModalDevolucion()" class="flex-1 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 transition-all">CANCELAR</button>
+                    <button type="submit" class="flex-1 h-14 rounded-2xl bg-emerald-500 text-white font-black shadow-xl shadow-emerald-500/20 hover:bg-emerald-600 transition-all">CONFIRMAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
-// Lógica de Modales
+
+// Lógica de Modal para Salida
 const modalS = document.getElementById('modalSalida');
 const selProd = document.getElementById('modalIdProducto');
 const labStock = document.getElementById('modalStockLabel');
@@ -256,7 +296,22 @@ function actualizarLabel() {
 selProd.addEventListener('change', actualizarLabel);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModalSalida(); });
 
-// LÓGICA DE BÚSQUEDA CORREGIDA
+// Logica para modal de Devolucion
+const modalD = document.getElementById('modalDevolucion');
+const devId = document.getElementById('modalDevId');
+const devNombre = document.getElementById('modalDevNombre');
+
+function abrirModalDevolucion(id, nombre) {
+    modalD.classList.remove('hidden');
+    devId.value = id;
+    devNombre.innerText = nombre;
+}
+
+function cerrarModalDevolucion() {
+    modalD.classList.add('hidden');
+}
+
+// LÓGICA DE BÚSQUEDA 
 const inputBuscar = document.getElementById('inputBuscar');
 
 inputBuscar.addEventListener('input', function () {
@@ -278,6 +333,8 @@ inputBuscar.addEventListener('input', function () {
         }
     });
 });
+
+
 </script>
 
 </body>
