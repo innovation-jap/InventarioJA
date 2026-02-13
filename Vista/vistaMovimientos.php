@@ -43,6 +43,23 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
             },
         }
     </script>
+    <style>
+        /* Animación de entrada suave */
+        @keyframes fadeInSlide {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-page {
+            animation: fadeInSlide 0.5s ease-out forwards;
+        }
+
+        /* Evitar saltos visuales en las pestañas */
+        .nav-tabs {
+            min-width: 320px;
+            display: inline-flex;
+        }
+    </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark min-h-screen text-slate-800 dark:text-slate-100 font-display">
 
@@ -54,7 +71,7 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
                     <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined !text-2xl font-bold">sync_alt</span>
                     </div>
-                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Donde Patty</h2>
+                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">JUNNIOR ACHIEVEMENT</h2>
                 </div>
             </div>
             <div class="flex items-center gap-3 pl-6">
@@ -67,10 +84,13 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
         </div>
     </header>
 
-    <main class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-10 w-full flex-1">
-        <div class="flex items-center gap-1 mb-10 bg-white dark:bg-slate-800 p-1.5 rounded-2xl w-fit border border-slate-100 dark:border-slate-700 shadow-sm">
-            <a href="../Controlador/controladorProducto.php?accion=listar" class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">Inventario</a>
-            <a href="#" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-slate-900 shadow-md">Movimientos</a>
+    <main class="animate-page max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-10 w-full flex-1">
+        
+        <div class="flex mb-10">
+            <div class="nav-tabs bg-white dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <a href="../Controlador/controladorProducto.php?accion=listar" class="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-center">Inventario</a>
+                <a href="#" class="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-slate-900 shadow-md text-center">Movimientos</a>
+            </div>
         </div>
 
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-10">
