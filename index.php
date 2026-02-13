@@ -59,7 +59,7 @@
                     <div class="bg-primary p-2 rounded-xl shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined !text-background-dark font-bold !text-2xl">inventory_2</span>
                     </div>
-                    <h1 class="text-xl font-black tracking-tight text-slate-800 dark:text-white uppercase">Donde Patty</h1>
+                    <h1 class="text-xl font-black tracking-tight text-slate-800 dark:text-white uppercase">Junnior Achievement</h1>
                 </div>
                 <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Bienvenido</h2>
                 <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Ingresa tus credenciales para acceder al panel</p>
