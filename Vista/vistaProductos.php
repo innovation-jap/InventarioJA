@@ -8,237 +8,196 @@ if (!isset($_SESSION['idUsuario'])) {
     exit();
 }
 
-// Lógica de edición compatible con ObjectIDs de MongoDB
-$editingId = isset($_GET['editar']) ? $_GET['editar'] : null;
 $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
-
-// Datos de paginación que vienen del controlador
 $paginaActual = $datos['paginaActual'] ?? 1;
 $totalPaginas = $datos['totalPaginas'] ?? 1;
+// Nota: La lógica de $editingId la manejaremos vía Modal o página aparte para no romper el diseño de cards
 ?>
 <!DOCTYPE html>
-<html class="light" lang="es">
+<html lang="es" class="light">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Sistema de Inventario - Donde Patty</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "immersive-blue-black": "#22404D",
-                        "resilient-turquoise": "#00A0AF",
-                        "empowered-yellow": "#E3E24F",
-                        "sustainable-green": "#008B61",
-                        "startup-white": "#FFFFFF",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#111621",
-                        "ice": "#C3E5F5"
+                        "primary": "#0df2f2",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#102222",
                     },
                     fontFamily: { "display": ["Inter", "sans-serif"] },
-                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
                 },
             },
         }
     </script>
     <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-        .table-row-form-edit { display: contents; }
-        .table-row-form-edit td input, .table-row-form-edit td select { padding: 0.25rem 0.5rem; height: 36px; font-size: 0.875rem; }
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined { font-size: 20px; vertical-align: middle; }
     </style>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark text-immersive-blue-black dark:text-startup-white min-h-screen">
-<div class="flex min-h-screen w-full justify-center">
-    <div class="flex flex-col max-w-[1200px] w-full px-4 sm:px-8 md:px-12 lg:px-20 xl:px-24 my-4">
-
-        <header class="flex items-center justify-between whitespace-nowrap border border-ice/70 dark:border-gray-700 bg-startup-white dark:bg-background-dark rounded-t-xl px-6 py-3 shadow-sm">
-            <div class="flex items-center gap-4">
-                <div class="size-8 flex items-center justify-center rounded-full bg-resilient-turquoise/10 text-resilient-turquoise">
-                    <span class="material-symbols-outlined text-[28px]">inventory_2</span>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-slate-800 dark:text-slate-100">
+<div class="flex flex-col min-h-screen">
+    
+    <header class="sticky top-0 z-50 w-full bg-white dark:bg-[#152a2a] border-b border-primary/10 shadow-sm">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-10">
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900">
+                        <span class="material-symbols-outlined !text-2xl font-bold">inventory_2</span>
+                    </div>
+                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Donde Patty</h2>
                 </div>
-                <div>
-                    <h2 class="text-immersive-blue-black dark:text-startup-white text-lg font-bold leading-tight tracking-[-0.015em]">Sistema de Inventario</h2>
-                    <p class="text-xs text-immersive-blue-black/60 dark:text-gray-400">Sesión de <?= $nombreUsuario ?></p>
+                <div class="hidden md:flex items-center">
+                    <div class="relative group">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                        <input class="w-80 bg-slate-100 dark:bg-background-dark/50 border-none rounded-xl pl-12 pr-4 h-11 focus:ring-2 focus:ring-primary/50 text-sm transition-all" id="inputBuscar" placeholder="Buscar productos..." type="text"/>
+                    </div>
                 </div>
             </div>
-            <span class="inline-flex items-center gap-2 rounded-full bg-empowered-yellow/20 px-3 py-1 text-xs font-semibold text-immersive-blue-black">
-                <span class="w-2 h-2 rounded-full bg-empowered-yellow"></span> Inventario activo
-            </span>
-        </header>
 
-        <main class="bg-startup-white dark:bg-background-dark flex-grow rounded-b-xl shadow-sm border-x border-b border-ice/70 dark:border-gray-700 min-h-[70vh] flex flex-col">
+            <div class="flex items-center gap-6">
+                <a href="../Controlador/controladorProducto.php?accion=agregar" class="bg-primary hover:bg-primary/80 text-slate-900 px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined">add</span>
+                    <span>Nuevo producto</span>
+                </a>
+                <div class="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-700">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sesión de</p>
+                        <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight"><?= $nombreUsuario ?></p>
+                    </div>
+                    <div class="size-11 rounded-full bg-primary/20 p-0.5 border-2 border-primary overflow-hidden">
+                        <img alt="Avatar" class="w-full h-full object-cover" src="https://ui-avatars.com/api/?name=<?= urlencode($nombreUsuario) ?>&background=0df2f2&color=102222"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-10 w-full flex-1">
+        <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+                <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Inventario de Productos</h1>
+                <p class="text-slate-500 dark:text-slate-400 max-w-xl text-lg">Gestiona y visualiza tus productos en tiempo real.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 hover:text-primary transition-colors shadow-sm">
+                    <span class="material-symbols-outlined">grid_view</span>
+                </button>
+                <div class="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                <a href="../Controlador/controladorCerrarSesion.php" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-50 border border-rose-200 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition-all shadow-sm">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span>Cerrar</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             
-            <div class="flex flex-wrap justify-between gap-4 px-6 pt-4 pb-3 border-b border-ice/70 dark:border-gray-800">
-                <div class="flex min-w-72 flex-col gap-1.5">
-                    <p class="text-immersive-blue-black dark:text-startup-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Inventario de productos</p>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Gestiona y visualiza todos los productos de tu inventario.</p>
-                </div>
-                <a href="../Controlador/controladorProducto.php?accion=agregar"
-                   class="hidden sm:flex min-w-[140px] max-w-[260px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 md:h-11 px-5 bg-resilient-turquoise text-startup-white text-sm font-bold gap-2 shadow-sm hover:bg-immersive-blue-black transition">
-                    <span class="material-symbols-outlined">add_circle</span>
-                    <span class="truncate">Nuevo producto</span>
-                </a>
-            </div>
-
-            <div class="px-2 sm:px-4 md:px-6 py-3 flex-1 flex flex-col">
-                <div class="overflow-x-auto rounded-xl border border-ice dark:border-gray-700 bg-startup-white dark:bg-background-dark/80 flex-grow">
-                    <table class="w-full min-w-[800px]">
-                        <thead>
-                        <tr class="bg-ice/60 dark:bg-gray-800">
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[20%]">Nombre producto</th>
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Ubicación</th>
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[25%]">Descripción</th>
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[10%]">Stock</th>
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Fecha ingreso (Perú)</th>
-                            <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide w-[15%]">Acciones</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php if (!empty($datos['productos'])) : ?>
-                            <?php foreach ($datos['productos'] as $prod) : 
-                                $idStr = (string)$prod['_id']; 
-                            ?>
-                                <tr class="border-t border-t-ice dark:border-t-gray-700 hover:bg-ice/40 dark:hover:bg-gray-800 transition">
-                                    <?php if ($editingId === $idStr) : ?>
-                                        <form method="POST" action="../Controlador/controladorProducto.php?accion=editar" class="table-row-form-edit">
-                                            <td class="px-4 py-3 text-sm">
-                                                <input type="hidden" name="idProducto" value="<?= htmlspecialchars($idStr) ?>" />
-                                                <input type="text" name="nombreP" value="<?= htmlspecialchars($prod['nombreP'] ?? '') ?>" class="form-input rounded-lg w-full border-ice dark:border-gray-600 bg-startup-white dark:bg-background-dark text-sm" required />
-                                            </td>
-                                            <td class="px-4 py-3 text-sm">
-                                                <select name="almacen" class="form-select rounded-lg w-full border-ice dark:border-gray-600 bg-startup-white dark:bg-background-dark text-sm" required>
-                                                    <option value="Almacén 1" <?= ($prod['almacen'] ?? '') == 'Almacén 1' ? 'selected' : '' ?>>Almacén 1</option>
-                                                    <option value="Almacén 2" <?= ($prod['almacen'] ?? '') == 'Almacén 2' ? 'selected' : '' ?>>Almacén 2</option>
-                                                    <option value="Sótano" <?= ($prod['almacen'] ?? '') == 'Sótano' ? 'selected' : '' ?>>Sótano</option>
-                                                </select>
-                                            </td>
-                                            <td class="px-4 py-3 text-sm">
-                                                <input type="text" name="descripcionP" value="<?= htmlspecialchars($prod['descripcionP'] ?? '') ?>" class="form-input rounded-lg w-full border-ice dark:border-gray-600 bg-startup-white dark:bg-background-dark text-sm" />
-                                            </td>
-                                            <td class="px-4 py-3 text-sm">
-                                                <input type="number" name="stock" value="<?= htmlspecialchars($prod['stock'] ?? 0) ?>" class="form-input rounded-lg w-full border-ice dark:border-gray-600 bg-startup-white dark:bg-background-dark text-sm" required />
-                                            </td>
-                                            <td class="px-4 py-3 text-sm">
-                                                 <span class="p-1">No editable</span>
-                                            </td>
-                                            <td class="px-4 py-3 flex gap-2">
-                                                <button type="submit" class="bg-sustainable-green text-startup-white px-3 py-1 rounded-full hover:bg-immersive-blue-black transition shadow-sm">
-                                                    <span class="material-symbols-outlined text-base leading-none">save</span>
-                                                </button>
-                                                <a href="../Controlador/controladorProducto.php?accion=listar" class="bg-ice text-immersive-blue-black px-3 py-1 rounded-full hover:bg-ice/80 transition shadow-sm">
-                                                    <span class="material-symbols-outlined text-base leading-none">cancel</span>
-                                                </a>
-                                            </td>
-                                        </form>
-                                    <?php else : ?>
-                                        <td class="px-4 py-3 text-sm font-medium whitespace-nowrap"><?= htmlspecialchars($prod['nombreP'] ?? '') ?></td>
-                                        <td class="px-4 py-3 text-sm whitespace-nowrap">
-                                            <span class="inline-flex items-center gap-1 text-gray-600 dark:text-gray-300">
-                                                <span class="material-symbols-outlined text-base text-resilient-turquoise">location_on</span>
-                                                <?= htmlspecialchars($prod['almacen'] ?? 'No asignado') ?>
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm"><?= htmlspecialchars($prod['descripcionP'] ?? '') ?></td>
-                                        <td class="px-4 py-3 text-sm whitespace-nowrap">
-                                            <div class="inline-flex items-center justify-center rounded-full h-7 px-3 text-xs font-medium 
-                                                <?= ($prod['stock'] ?? 0) > 10 ? 'bg-sustainable-green/10 text-sustainable-green' : (($prod['stock'] ?? 0) > 0 ? 'bg-empowered-yellow/20 text-immersive-blue-black' : 'bg-red-100 text-red-700') ?>">
-                                                <?= htmlspecialchars($prod['stock'] ?? 0) ?>
-                                            </div>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm whitespace-nowrap font-mono text-gray-500">
-                                            <?php 
-                                                if (isset($prod['fechaI']) && is_object($prod['fechaI'])) {
-                                                    $fecha = $prod['fechaI']->toDateTime();
-                                                    $fecha->setTimezone(new DateTimeZone('America/Lima'));
-                                                    echo $fecha->format('d/m/Y H:i');
-                                                } else {
-                                                    echo 'N/A';
-                                                }
-                                            ?>
-                                        </td>
-                                        <td class="px-4 py-3 text-sm font-bold whitespace-nowrap">
-                                            <div class="flex gap-1">
-                                                <a href="../Controlador/controladorProducto.php?accion=listar&editar=<?= urlencode($idStr) ?>" 
-                                                class="p-2 rounded-full hover:bg-ice text-resilient-turquoise hover:text-immersive-blue-black transition" title="Editar">
-                                                    <span class="material-symbols-outlined text-lg">edit</span>
-                                                </a>
-                                                
-                                                <a href="../Controlador/controladorProducto.php?accion=eliminar&id=<?= urlencode($idStr) ?>" 
-                                                class="p-2 rounded-full hover:bg-red-50 text-red-600 hover:text-red-800 transition" 
-                                                onclick="return confirm('¿Eliminar producto?');" title="Eliminar">
-                                                    <span class="material-symbols-outlined text-lg">delete</span>
-                                                </a>
-                                                
-                                                <a href="../Controlador/controladorProducto.php?accion=devolucion&id=<?= urlencode($idStr) ?>" 
-                                                class="p-2 rounded-full hover:bg-empowered-yellow/20 text-sustainable-green transition" title="Registrar devolución">
-                                                    <span class="material-symbols-outlined text-lg">undo</span>
-                                                </a>
-                                            </div>
-                                        </td>
-                                    <?php endif; ?>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else : ?>
-                            <tr><td colspan='6' class='p-8 text-center text-gray-500'>No hay productos registrados en esta página.</td></tr>
-                        <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-
-                <?php if ($totalPaginas > 1) : ?>
-                <div class="flex items-center justify-between border-t border-ice dark:border-gray-700 bg-startup-white dark:bg-background-dark px-4 py-3 sm:px-6 mt-4 rounded-xl shadow-sm">
-                    <div class="flex flex-1 justify-between sm:hidden">
-                        <a href="?accion=listar&p=<?= max(1, $paginaActual - 1) ?>" class="relative inline-flex items-center rounded-md border border-ice bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Anterior</a>
-                        <a href="?accion=listar&p=<?= min($totalPaginas, $paginaActual + 1) ?>" class="relative ml-3 inline-flex items-center rounded-md border border-ice bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Siguiente</a>
-                    </div>
-                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-sm text-gray-700 dark:text-gray-400">
-                                Mostrando página <span class="font-bold text-resilient-turquoise"><?= $paginaActual ?></span> de <span class="font-bold"><?= $totalPaginas ?></span>
-                            </p>
+            <?php if (!empty($datos['productos'])) : ?>
+                <?php foreach ($datos['productos'] as $prod) : 
+                    $idStr = (string)$prod['_id'];
+                    $stock = $prod['stock'] ?? 0;
+                ?>
+                <div class="bg-white dark:bg-background-dark/80 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden group hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
+                    <div class="relative h-56 w-full overflow-hidden bg-slate-100">
+                        <img alt="<?= htmlspecialchars($prod['nombreP']) ?>" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                             src="<?= !empty($prod['imagen']) ? $prod['imagen'] : 'https://placehold.co/600x400/102222/0df2f2?text=' . urlencode($prod['nombreP']) ?>"/>
+                        
+                        <div class="absolute top-4 left-4">
+                            <span class="bg-primary/90 text-slate-900 text-[10px] font-black px-3 py-1.5 rounded-lg shadow-xl uppercase tracking-widest">
+                                <?= htmlspecialchars($prod['almacen'] ?? 'General') ?>
+                            </span>
                         </div>
-                        <div>
-                            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                                <?php for ($i = 1; $i <= $totalPaginas; $i++) : ?>
-                                    <a href="?accion=listar&p=<?= $i ?>" 
-                                    class="relative inline-flex items-center px-4 py-2 text-sm font-semibold transition-all
-                                    <?= $i == $paginaActual 
-                                        ? 'z-10 bg-resilient-turquoise text-startup-white' 
-                                        : 'text-immersive-blue-black ring-1 ring-inset ring-ice hover:bg-ice/30' ?>">
-                                        <?= $i ?>
-                                    </a>
-                                <?php endfor; ?>
-                            </nav>
+                        <div class="absolute top-4 right-4 bg-white/90 dark:bg-slate-900/90 p-2 rounded-xl backdrop-blur-sm shadow-xl">
+                            <span class="text-sm font-bold <?= $stock <= 5 ? 'text-rose-600' : 'text-slate-900 dark:text-white' ?> flex items-center gap-1">
+                                <span class="material-symbols-outlined text-primary font-bold">inventory_2</span> <?= $stock ?>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white leading-tight mb-2"><?= htmlspecialchars($prod['nombreP']) ?></h3>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2">
+                            <?= htmlspecialchars($prod['descripcionP'] ?? 'Sin descripción disponible.') ?>
+                        </p>
+                        
+                        <div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] uppercase font-black text-slate-400 tracking-wider">Ingreso</span>
+                                <span class="text-xs font-bold text-slate-600 dark:text-slate-300">
+                                    <?php 
+                                        if (isset($prod['fechaI']) && is_object($prod['fechaI'])) {
+                                            $fecha = $prod['fechaI']->toDateTime();
+                                            $fecha->setTimezone(new DateTimeZone('America/Lima'));
+                                            echo $fecha->format('d M, Y');
+                                        } else { echo 'N/A'; }
+                                    ?>
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <a href="../Controlador/controladorProducto.php?accion=listar&editar=<?= urlencode($idStr) ?>" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-primary/20 hover:text-primary transition-all" title="Editar">
+                                    <span class="material-symbols-outlined">edit</span>
+                                </a>
+                                <a href="../Controlador/controladorProducto.php?accion=devolucion&id=<?= urlencode($idStr) ?>" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all" title="Devolución">
+                                    <span class="material-symbols-outlined">undo</span>
+                                </a>
+                                <a href="../Controlador/controladorProducto.php?accion=eliminar&id=<?= urlencode($idStr) ?>" onclick="return confirm('¿Eliminar producto?');" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-rose-500/20 hover:text-rose-500 transition-all" title="Eliminar">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <?php endif; ?>
-            </div>
+                <?php endforeach; ?>
+            <?php else : ?>
+                <div class="col-span-full py-20 text-center bg-white dark:bg-slate-800 rounded-2xl border-2 border-dashed border-slate-200">
+                    <p class="text-slate-500">No hay productos registrados.</p>
+                </div>
+            <?php endif; ?>
 
-            <footer class="mt-auto flex flex-col sm:flex-row items-center justify-center gap-3 px-6 pb-4 pt-3 bg-background-light dark:bg-gray-800/60 rounded-b-xl border-t border-ice/70 dark:border-gray-700">
-                <a href="../Controlador/controladorProducto.php?accion=agregar" class="w-full sm:w-auto flex min-w-[120px] cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-resilient-turquoise text-startup-white text-sm font-bold gap-2 hover:bg-immersive-blue-black transition shadow-md">
-                    <span class="material-symbols-outlined text-base">add_circle</span><span class="truncate">Nuevo producto</span>
-                </a>
-                <a href="../Controlador/controladorProducto.php?accion=salida" class="w-full sm:w-auto flex min-w-[120px] cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-startup-white text-immersive-blue-black border border-ice text-sm font-bold gap-2 hover:bg-ice/70 transition shadow-sm">
-                    <span class="material-symbols-outlined text-base">arrow_upward</span><span class="truncate">Nueva salida</span>
-                </a>
-                <a href="../Controlador/controladorProducto.php?accion=movimientos" class="w-full sm:w-auto flex min-w-[120px] cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-startup-white text-immersive-blue-black border border-ice text-sm font-bold gap-2 hover:bg-ice/70 transition shadow-sm">
-                    <span class="material-symbols-outlined text-base">sync_alt</span><span class="truncate">Ver movimientos</span>
-                </a>
-                <div class="hidden sm:block flex-grow"></div>
-                <a href="../Controlador/controladorCerrarSesion.php" class="w-full sm:w-auto flex min-w-[120px] cursor-pointer items-center justify-center rounded-full h-10 px-4 bg-immersive-blue-black text-startup-white text-sm font-bold gap-2 hover:bg-black transition shadow-md">
-                    <span class="material-symbols-outlined text-base">logout</span><span class="truncate">Cerrar sesión</span>
-                </a>
-            </footer>
-        </main>
-    </div>
+            <a href="../Controlador/controladorProducto.php?accion=agregar" class="bg-primary/5 rounded-2xl border-2 border-dashed border-primary/30 flex flex-col items-center justify-center p-8 text-center group cursor-pointer hover:bg-primary/10 transition-all duration-300">
+                <div class="bg-primary size-16 rounded-full flex items-center justify-center text-slate-900 mb-4 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined !text-4xl">add</span>
+                </div>
+                <h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">Añadir Nuevo</h4>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Expande tu catálogo</p>
+            </a>
+        </div>
+
+        <?php if ($totalPaginas > 1) : ?>
+        <div class="mt-12 flex justify-center">
+            <nav class="flex gap-2">
+                <?php for ($i = 1; $i <= $totalPaginas; $i++) : ?>
+                    <a href="?accion=listar&p=<?= $i ?>" class="size-10 flex items-center justify-center rounded-xl font-bold transition-all <?= $i == $paginaActual ? 'bg-primary text-slate-900 shadow-lg shadow-primary/30' : 'bg-white dark:bg-slate-800 text-slate-500 hover:border-primary border border-transparent' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+            </nav>
+        </div>
+        <?php endif; ?>
+    </main>
+
+    <footer class="bg-white dark:bg-[#152a2a] border-t border-slate-100 dark:border-slate-800 py-6 mt-10">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-400">
+                <div class="flex items-center gap-2">
+                    <div class="size-2 rounded-full bg-primary"></div>
+                    <span>Total: <span class="text-slate-900 dark:text-white font-bold"><?= count($datos['productos'] ?? []) ?></span></span>
+                </div>
+                <a href="../Controlador/controladorProducto.php?accion=movimientos" class="hover:text-primary transition-colors">Ver Movimientos</a>
+                <a href="../Controlador/controladorProducto.php?accion=salida" class="hover:text-primary transition-colors">Registrar Salida</a>
+            </div>
+            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">© 2026 Sistema Donde Patty</p>
+        </div>
+    </footer>
 </div>
 </body>
 </html>
