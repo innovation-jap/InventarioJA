@@ -1,209 +1,186 @@
 <?php
-// Incluye el controlador para acceder a los datos.
 require_once('../Controlador/controladorProducto.php');
 
-// --- CORRECCIÓN DE FILTROS PARA MONGODB ---
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (!isset($_SESSION['idUsuario'])) {
+    header("Location: ../index.php");
+    exit();
+}
+
+$nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
+
+// Filtros para MongoDB
 $filtered_get = $_GET;
 unset($filtered_get['accion']); 
-
-// Construimos la query para exportación asegurando que los IDs sean strings
 $filter_query = http_build_query(array_filter($filtered_get));
 
-// Variables para mantener el estado de los filtros en el formulario
 $current_id_producto = $_GET['id_producto'] ?? '';
 $current_id_usuario = $_GET['id_usuario'] ?? '';
 $current_fecha_inicio = $_GET['fecha_inicio'] ?? '';
 $current_fecha_fin = $_GET['fecha_fin'] ?? '';
 ?>
 <!DOCTYPE html>
-<html class="light" lang="es">
+<html lang="es" class="light">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Registro de Movimientos - Sistema de Inventario</title>
+    <title>Movimientos - Donde Patty</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com" rel="preconnect"/>
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "immersive-blue-black": "#22404D",
-                        "resilient-turquoise": "#00A0AF",
-                        "empowered-yellow": "#E3E24F",
-                        "sustainable-green": "#008B61",
-                        "startup-white": "#FFFFFF",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#111621",
-                        "ice": "#C3E5F5"
+                        "primary": "#0df2f2",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#102222",
                     },
                     fontFamily: { "display": ["Inter", "sans-serif"] },
-                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
                 },
             },
         }
     </script>
-    <style>
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    </style>
 </head>
-<body class="font-display bg-background-light dark:bg-background-dark min-h-screen flex items-start justify-center px-4">
-<div class="w-full max-w-[1200px] my-4">
-    <header class="flex items-center justify-between whitespace-nowrap border border-ice/70 dark:border-gray-700 bg-startup-white dark:bg-background-dark rounded-t-xl px-6 py-3 shadow-sm">
-        <div class="flex items-center gap-3 text-immersive-blue-black dark:text-startup-white">
-            <div class="size-8 flex items-center justify-center rounded-full bg-resilient-turquoise/10 text-resilient-turquoise">
-                <span class="material-symbols-outlined text-[26px]">sync_alt</span>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-slate-800 dark:text-slate-100 font-display">
+
+<div class="flex flex-col min-h-screen">
+    <header class="sticky top-0 z-50 w-full bg-white dark:bg-[#152a2a] border-b border-primary/10 shadow-sm">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-10">
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
+                        <span class="material-symbols-outlined !text-2xl font-bold">sync_alt</span>
+                    </div>
+                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Donde Patty</h2>
+                </div>
             </div>
-            <div>
-                <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">Movimientos de inventario</h2>
-                <p class="text-xs text-immersive-blue-black/60 dark:text-gray-400">Historial de entradas, salidas y devoluciones.</p>
+            <div class="flex items-center gap-3 pl-6">
+                <div class="text-right hidden sm:block">
+                    <p class="text-xs font-semibold text-slate-500 uppercase">Sesión de</p>
+                    <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight"><?= $nombreUsuario ?></p>
+                </div>
+                <img alt="Avatar" class="size-11 rounded-full border-2 border-primary" src="https://ui-avatars.com/api/?name=<?= urlencode($nombreUsuario) ?>&background=0df2f2&color=102222"/>
             </div>
         </div>
     </header>
 
-    <main class="bg-startup-white dark:bg-background-dark rounded-b-xl shadow-sm border-x border-b border-ice/70 dark:border-gray-700 min-h-[70vh] flex flex-col">
-        <div class="flex flex-col gap-5 p-6 border-b border-ice/70 dark:border-gray-800">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-                <div class="flex flex-col gap-1.5">
-                    <p class="text-immersive-blue-black dark:text-startup-white text-3xl md:text-4xl font-black leading-tight tracking-[-0.033em]">Registro de movimientos</p>
-                    <p class="text-gray-600 dark:text-gray-400 text-sm md:text-base">Filtra por fecha, producto o usuario.</p>
-                </div>
-            </div>
-
-            <form method="GET" action="../Controlador/controladorProducto.php" class="flex flex-col gap-4">
-                <input type="hidden" name="accion" value="movimientos" />
-
-                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                    <div class="flex flex-col gap-1.5 col-span-2 sm:col-span-1">
-                        <label for="id_producto" class="text-xs font-semibold uppercase">Producto</label>
-                        <select name="id_producto" id="id_producto" class="form-select rounded-lg text-sm border-gray-300 dark:bg-gray-700 dark:text-white">
-                            <option value="">-- Todos --</option>
-                            <?php foreach ($datos['productos'] as $producto): 
-                                $idProd = (string)$producto['_id']; 
-                            ?>
-                                <option value="<?= $idProd ?>" <?= $current_id_producto == $idProd ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($producto['nombreP'] ?? '') ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="flex flex-col gap-1.5 col-span-2 sm:col-span-1">
-                        <label for="id_usuario" class="text-xs font-semibold uppercase">Usuario</label>
-                        <select name="id_usuario" id="id_usuario" class="form-select rounded-lg text-sm border-gray-300 dark:bg-gray-700 dark:text-white">
-                            <option value="">-- Todos --</option>
-                            <?php foreach ($datos['usuarios'] as $usuario): 
-                                $idUser = (string)$usuario['_id'];
-                            ?>
-                                <option value="<?= $idUser ?>" <?= $current_id_usuario == $idUser ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($usuario['nombreU'] ?? '') ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="flex flex-col gap-1.5 col-span-1">
-                        <label class="text-xs font-semibold uppercase">Desde</label>
-                        <input type="date" name="fecha_inicio" value="<?= htmlspecialchars($current_fecha_inicio) ?>" class="form-input rounded-lg text-sm border-gray-300 dark:bg-gray-700 dark:text-white">
-                    </div>
-
-                    <div class="flex flex-col gap-1.5 col-span-1">
-                        <label class="text-xs font-semibold uppercase">Hasta</label>
-                        <input type="date" name="fecha_fin" value="<?= htmlspecialchars($current_fecha_fin) ?>" class="form-input rounded-lg text-sm border-gray-300 dark:bg-gray-700 dark:text-white">
-                    </div>
-                    
-                    <div class="col-span-2 lg:col-span-1 self-end">
-                        <button type="submit" class="w-full flex items-center justify-center gap-2 rounded-lg h-10 px-5 bg-resilient-turquoise text-white text-sm font-bold hover:bg-immersive-blue-black transition shadow-md">
-                            <span class="material-symbols-outlined text-base">search</span>Filtrar
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-            <div class="flex flex-col sm:flex-row gap-3 flex-wrap pt-4 border-t border-ice/70 dark:border-gray-800">
-                <a href="../Controlador/controladorProducto.php?accion=listar" class="flex items-center justify-center gap-2 rounded-full h-10 px-4 bg-white text-immersive-blue-black text-sm font-bold border border-ice shadow-sm hover:bg-ice/20 transition">
-                    <span class="material-symbols-outlined text-base">arrow_back</span>Volver a inventario
-                </a>
-                <a href="../Controlador/controladorProducto.php?accion=exportar&<?= htmlspecialchars($filter_query) ?>" class="flex items-center justify-center gap-2 rounded-full h-10 px-4 bg-sustainable-green text-white text-sm font-bold hover:bg-immersive-blue-black transition shadow-sm">
-                    <span class="material-symbols-outlined text-base">download</span>Exportar CSV
-                </a>
-            </div>
+    <main class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-10 w-full flex-1">
+        <div class="flex items-center gap-1 mb-10 bg-white dark:bg-slate-800 p-1.5 rounded-2xl w-fit border border-slate-100 dark:border-slate-700 shadow-sm">
+            <a href="../Controlador/controladorProducto.php?accion=listar" class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">Inventario</a>
+            <a href="#" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-slate-900 shadow-md">Movimientos</a>
         </div>
 
-        <div class="px-6 py-3 flex-1 overflow-x-auto">
-            <div class="flex overflow-hidden rounded-xl border border-ice dark:border-gray-700">
-                <table class="min-w-[900px] table-auto w-full"> 
-                    <thead class="bg-ice/60 dark:bg-gray-800">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">ID movimiento</th>
-                        <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Producto</th>
-                        <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Ubicación</th>
-                        <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Tipo</th>
-                        <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Cantidad</th>
-                        <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Usuario</th>
-                        <th class="px-4 py-3 text-left text-xs md:text-sm font-semibold uppercase tracking-wide">Fecha y hora</th>
-                    </tr>
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-10">
+            <div>
+                <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Registro Histórico</h1>
+                <p class="text-slate-500 dark:text-slate-400 text-lg">Auditoría completa de entradas y salidas.</p>
+            </div>
+            <a href="../Controlador/controladorProducto.php?accion=exportar&<?= htmlspecialchars($filter_query) ?>" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all">
+                <span class="material-symbols-outlined">download</span> Exportar CSV
+            </a>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 mb-8 shadow-sm">
+            <form method="GET" action="../Controlador/controladorProducto.php" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+                <input type="hidden" name="accion" value="movimientos" />
+                
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Producto</label>
+                    <select name="id_producto" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white">
+                        <option value="">-- Todos --</option>
+                        <?php foreach ($datos['productos'] as $producto): 
+                            $idP = (string)$producto['_id']; ?>
+                            <option value="<?= $idP ?>" <?= $current_id_producto == $idP ? 'selected' : '' ?>><?= htmlspecialchars($producto['nombreP']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Usuario</label>
+                    <select name="id_usuario" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white">
+                        <option value="">-- Todos --</option>
+                        <?php foreach ($datos['usuarios'] as $u): 
+                            $idU = (string)$u['_id']; ?>
+                            <option value="<?= $idU ?>" <?= $current_id_usuario == $idU ? 'selected' : '' ?>><?= htmlspecialchars($u['nombreU']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Desde</label>
+                    <input type="date" name="fecha_inicio" value="<?= $current_fecha_inicio ?>" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white">
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Hasta</label>
+                    <input type="date" name="fecha_fin" value="<?= $current_fecha_fin ?>" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white">
+                </div>
+
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-slate-900 dark:bg-primary text-white dark:text-slate-900 h-12 rounded-xl font-bold text-sm hover:scale-[1.02] transition-all shadow-lg shadow-primary/10">
+                        FILTRAR REGISTROS
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white dark:bg-background-dark/80 rounded-3xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
+                            <th class="px-6 py-4 text-[10px] font-black uppercase text-slate-400">Producto</th>
+                            <th class="px-6 py-4 text-[10px] font-black uppercase text-slate-400">Tipo</th>
+                            <th class="px-6 py-4 text-[10px] font-black uppercase text-slate-400">Cantidad</th>
+                            <th class="px-6 py-4 text-[10px] font-black uppercase text-slate-400">Usuario</th>
+                            <th class="px-6 py-4 text-[10px] font-black uppercase text-slate-400 text-right">Fecha y Hora</th>
+                        </tr>
                     </thead>
-                    <tbody>
-                    <?php if (!empty($datos['movimientos'])) : ?>
-                        <?php foreach ($datos['movimientos'] as $fila) : 
-                            $tipo = strtolower($fila['tipo'] ?? 'salida');
-                            $idMov = (string)$fila['idMovimiento'];
-                        ?>
-                            <tr class="border-t border-t-ice dark:border-t-gray-700 hover:bg-ice/40 dark:hover:bg-gray-800 transition">
-                                <td class="px-4 py-3 text-sm font-mono whitespace-nowrap" title="<?= $idMov ?>">
-                                    <?= substr($idMov, -6) ?>...
+                    <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
+                        <?php if (!empty($datos['movimientos'])) : ?>
+                            <?php foreach ($datos['movimientos'] as $fila) : 
+                                $tipo = strtolower($fila['tipo'] ?? 'salida');
+                                $colorTipo = $tipo === 'entrada' ? 'text-emerald-500 bg-emerald-500/10' : ($tipo === 'devolucion' ? 'text-blue-500 bg-blue-500/10' : 'text-rose-500 bg-rose-500/10');
+                                $icon = $tipo === 'entrada' ? 'arrow_upward' : ($tipo === 'devolucion' ? 'undo' : 'arrow_downward');
+                            ?>
+                            <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                <td class="px-6 py-5">
+                                    <p class="font-bold text-slate-900 dark:text-white"><?= htmlspecialchars($fila['nombreP']) ?></p>
+                                    <p class="text-[10px] text-slate-400 uppercase font-medium tracking-tighter"><?= htmlspecialchars($fila['almacen']) ?></p>
                                 </td>
-                                <td class="px-4 py-3 text-sm font-medium whitespace-nowrap text-immersive-blue-black dark:text-white">
-                                    <?= htmlspecialchars($fila['nombreP'] ?? 'N/A') ?>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-                                    <span class="inline-flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-base">location_on</span>
-                                        <?= htmlspecialchars($fila['almacen'] ?? 'N/A') ?>
+                                <td class="px-6 py-5">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase <?= $colorTipo ?>">
+                                        <span class="material-symbols-outlined !text-sm"><?= $icon ?></span>
+                                        <?= $tipo ?>
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-sm whitespace-nowrap">
-                                    <?php 
-                                        $badgeStyle = 'bg-red-100 text-red-700'; $icon = 'arrow_downward';
-                                        if ($tipo === 'entrada') { $badgeStyle = 'bg-green-100 text-green-700'; $icon = 'arrow_upward'; }
-                                        elseif ($tipo === 'devolucion') { $badgeStyle = 'bg-blue-100 text-blue-700'; $icon = 'undo'; }
-                                    ?>
-                                    <div class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold <?= $badgeStyle ?>">
-                                        <span class="material-symbols-outlined text-base"><?= $icon ?></span>
-                                        <span><?= ucfirst($tipo) ?></span>
-                                    </div>
+                                <td class="px-6 py-5 font-black text-lg <?= $tipo === 'salida' ? 'text-rose-500' : 'text-emerald-500' ?>">
+                                    <?= $tipo === 'salida' ? '-' : '+' ?><?= $fila['cantidad'] ?>
                                 </td>
-                                <td class="px-4 py-3 text-sm font-bold whitespace-nowrap <?= $tipo === 'salida' ? 'text-red-700' : 'text-green-700' ?>">
-                                    <?= $tipo === 'salida' ? '-' : '+' ?><?= htmlspecialchars($fila['cantidad'] ?? 0) ?>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300"><?= htmlspecialchars($fila['nombreU'] ?? 'N/A') ?></td>
-                                <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                                <td class="px-6 py-5 text-sm font-medium text-slate-500"><?= htmlspecialchars($fila['nombreU']) ?></td>
+                                <td class="px-6 py-5 text-right text-xs font-mono text-slate-400">
                                     <?php 
                                         if (isset($fila['fechaM']) && is_object($fila['fechaM'])) {
-                                            $fecha = $fila['fechaM']->toDateTime();
-                                            // Ajustamos a la zona horaria de Perú
-                                            $fecha->setTimezone(new DateTimeZone('America/Lima'));
-                                            echo $fecha->format('d/m/Y H:i:s');
-                                        } else {
-                                            echo htmlspecialchars($fila['fechaM'] ?? 'N/A');
-                                        }
+                                            $f = $fila['fechaM']->toDateTime();
+                                            $f->setTimezone(new DateTimeZone('America/Lima'));
+                                            echo $f->format('d/m/Y H:i');
+                                        } else { echo $fila['fechaM']; }
                                     ?>
                                 </td>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php else : ?>
-                        <tr><td colspan='7' class='p-8 text-center text-gray-500'>No se encontraron movimientos registrados.</td></tr>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <tr><td colspan="5" class="px-6 py-20 text-center text-slate-500">No hay movimientos que coincidan con los filtros.</td></tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 </div>
+
 </body>
 </html>
