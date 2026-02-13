@@ -73,6 +73,15 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     <span class="material-symbols-outlined">add</span>
                     <span class="hidden sm:inline">Nuevo producto</span>
                 </a>
+                <div class="hidden md:flex items-center ml-10">
+                    <div class="relative group">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                        <input id="inputBuscar" 
+                            class="w-80 bg-slate-100 dark:bg-background-dark/50 border-none rounded-xl pl-12 pr-4 h-11 focus:ring-2 focus:ring-primary/50 text-sm transition-all" 
+                            placeholder="Buscar por nombre..." 
+                            type="text"/>
+                    </div>
+                </div>
                 <div class="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-700">
                     <div class="text-right hidden sm:block">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sesión de</p>
@@ -246,4 +255,28 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModa
 </script>
 
 </body>
+
+<script>
+// Rbusqueda por nombres
+const inputBuscar = document.getElementById('inputBuscar');
+
+inputBuscar.addEventListener('input', function () {
+    const termino = this.value.toLowerCase().trim();
+    // Seleccionamos todos los contenedores de las tarjetas de productos
+    const productos = document.querySelectorAll('.grid > div.bg-white'); 
+
+    productos.forEach(producto => {
+        // Obtenemos el nombre del producto (el <h3> dentro de la tarjeta)
+        const nombre = producto.querySelector('h3').textContent.toLowerCase();
+        
+        if (nombre.includes(termino)) {
+            producto.style.display = 'flex'; // O 'block' dependiendo de tu layout
+            producto.classList.add('animate-page'); // Reutilizamos tu animación
+        } else {
+            producto.style.display = 'none';
+        }
+    });
+});
+</script>
+
 </html>
