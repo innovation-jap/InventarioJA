@@ -53,7 +53,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900">
                         <span class="material-symbols-outlined !text-2xl font-bold">inventory_2</span>
                     </div>
-                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Donde Patty</h2>
+                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Inventario JA</h2>
                 </div>
                 <div class="hidden md:flex items-center">
                     <div class="relative group">
