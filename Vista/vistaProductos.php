@@ -36,6 +36,23 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
             },
         }
     </script>
+    <style>
+        /* Animación de entrada suave */
+        @keyframes fadeInSlide {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-page {
+            animation: fadeInSlide 0.5s ease-out forwards;
+        }
+
+        /* Alineación fija para pestañas de navegación */
+        .nav-tabs {
+            min-width: 320px;
+            display: inline-flex;
+        }
+    </style>
 </head>
 <body class="bg-background-light dark:bg-background-dark min-h-screen text-slate-800 dark:text-slate-100 font-display">
 
@@ -49,11 +66,6 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     </div>
                     <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Junnior Achievement</h2>
                 </div>
-                
-                <nav class="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-background-dark/50 p-1 rounded-xl">
-                    <a href="?accion=listar" class="px-4 py-2 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm">INVENTARIO</a>
-                    <a href="../Controlador/controladorProducto.php?accion=movimientos" class="px-4 py-2 rounded-lg text-xs font-bold text-slate-500 hover:text-primary transition-all">MOVIMIENTOS</a>
-                </nav>
             </div>
 
             <div class="flex items-center gap-6">
@@ -72,7 +84,15 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
         </div>
     </header>
 
-    <main class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-10 w-full flex-1">
+    <main class="animate-page max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-10 w-full flex-1">
+        
+        <div class="flex mb-10">
+            <nav class="nav-tabs bg-white dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                <a href="?accion=listar" class="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-slate-900 shadow-md text-center">INVENTARIO</a>
+                <a href="../Controlador/controladorProducto.php?accion=movimientos" class="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:text-primary transition-all text-center">MOVIMIENTOS</a>
+            </nav>
+        </div>
+
         <div class="mb-10">
             <h1 class="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Inventario General</h1>
             <p class="text-slate-500 dark:text-slate-400 text-lg">Administración de stock, devoluciones y bajas de productos.</p>
