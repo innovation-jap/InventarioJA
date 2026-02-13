@@ -64,7 +64,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined !text-2xl font-bold">inventory_2</span>
                     </div>
-                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Junnior Achievement</h2>
+                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Donde Patty</h2>
                 </div>
             </div>
 
@@ -73,15 +73,17 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     <span class="material-symbols-outlined">add</span>
                     <span class="hidden sm:inline">Nuevo producto</span>
                 </a>
+                
                 <div class="hidden md:flex items-center ml-10">
                     <div class="relative group">
                         <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
                         <input id="inputBuscar" 
-                            class="w-80 bg-slate-100 dark:bg-background-dark/50 border-none rounded-xl pl-12 pr-4 h-11 focus:ring-2 focus:ring-primary/50 text-sm transition-all" 
+                            class="w-80 bg-slate-100 dark:bg-background-dark/50 border-none rounded-xl pl-12 pr-4 h-11 focus:ring-2 focus:ring-primary/50 text-sm transition-all text-slate-900 dark:text-white" 
                             placeholder="Buscar por nombre..." 
                             type="text"/>
                     </div>
                 </div>
+
                 <div class="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-700">
                     <div class="text-right hidden sm:block">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sesión de</p>
@@ -107,13 +109,13 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
             <p class="text-slate-500 dark:text-slate-400 text-lg">Administración de stock, devoluciones y bajas de productos.</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div id="contenedorProductos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <?php if (!empty($datos['productos'])) : ?>
                 <?php foreach ($datos['productos'] as $prod) : 
                     $idStr = (string)$prod['_id'];
                     $stock = $prod['stock'] ?? 0;
                 ?>
-                <div class="bg-white dark:bg-background-dark/80 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden group hover:shadow-2xl transition-all duration-300 flex flex-col">
+                <div class="tarjeta-producto bg-white dark:bg-background-dark/80 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden group hover:shadow-2xl transition-all duration-300 flex flex-col">
                     <div class="relative h-48 w-full overflow-hidden bg-slate-100">
                         <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://placehold.co/600x400/102222/0df2f2?text=<?= urlencode($prod['nombreP']) ?>"/>
                         <div class="absolute top-4 left-4">
@@ -231,6 +233,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
 </div>
 
 <script>
+// Lógica de Modales
 const modalS = document.getElementById('modalSalida');
 const selProd = document.getElementById('modalIdProducto');
 const labStock = document.getElementById('modalStockLabel');
@@ -252,31 +255,30 @@ function actualizarLabel() {
 
 selProd.addEventListener('change', actualizarLabel);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cerrarModalSalida(); });
-</script>
 
-</body>
-
-<script>
-// Rbusqueda por nombres
+// LÓGICA DE BÚSQUEDA CORREGIDA
 const inputBuscar = document.getElementById('inputBuscar');
 
 inputBuscar.addEventListener('input', function () {
     const termino = this.value.toLowerCase().trim();
-    // Seleccionamos todos los contenedores de las tarjetas de productos
-    const productos = document.querySelectorAll('.grid > div.bg-white'); 
+    // Selector corregido para las tarjetas
+    const tarjetas = document.querySelectorAll('.tarjeta-producto'); 
 
-    productos.forEach(producto => {
-        // Obtenemos el nombre del producto (el <h3> dentro de la tarjeta)
-        const nombre = producto.querySelector('h3').textContent.toLowerCase();
+    tarjetas.forEach(tarjeta => {
+        const nombre = tarjeta.querySelector('h3').textContent.toLowerCase();
         
         if (nombre.includes(termino)) {
-            producto.style.display = 'flex'; // O 'block' dependiendo de tu layout
-            producto.classList.add('animate-page'); // Reutilizamos tu animación
+            tarjeta.style.display = 'flex'; 
+            tarjeta.classList.remove('animate-page');
+            // Forzar reinicio de animación
+            void tarjeta.offsetWidth; 
+            tarjeta.classList.add('animate-page');
         } else {
-            producto.style.display = 'none';
+            tarjeta.style.display = 'none';
         }
     });
 });
 </script>
 
+</body>
 </html>
