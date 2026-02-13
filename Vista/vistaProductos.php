@@ -17,7 +17,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Donde Patty - Panel de Inventario</title>
+    <title>Junnior Achievement</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -64,16 +64,11 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined !text-2xl font-bold">inventory_2</span>
                     </div>
-                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Donde Patty</h2>
+                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Junnior Achievement</h2>
                 </div>
             </div>
 
             <div class="flex items-center gap-6">
-                <a href="../Controlador/controladorProducto.php?accion=agregar" class="bg-primary hover:bg-primary/80 text-slate-900 px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
-                    <span class="material-symbols-outlined">add</span>
-                    <span class="hidden sm:inline">Nuevo producto</span>
-                </a>
-                
                 <div class="hidden md:flex items-center ml-10">
                     <div class="relative group">
                         <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
@@ -83,6 +78,11 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                             type="text"/>
                     </div>
                 </div>
+                
+                <a href="../Controlador/controladorProducto.php?accion=agregar" class="bg-primary hover:bg-primary/80 text-slate-900 px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined">add</span>
+                    <span class="hidden sm:inline">Nuevo producto</span>
+                </a>
 
                 <div class="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-700">
                     <div class="text-right hidden sm:block">
