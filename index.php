@@ -1,124 +1,118 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
+<html lang="es" class="dark"> <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Iniciar Sesión - Sistema de Inventario</title>
+    <title>Donde Patty - Acceso al Sistema</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-    <script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "immersive-blue-black": "#22404D",
-                        "resilient-turquoise": "#00A0AF",
-                        "empowered-yellow": "#E3E24F",
-                        "sustainable-green": "#008B61",
-                        "startup-white": "#FFFFFF",
-                        "background-light": "#f6f6f8",
-                        "background-dark": "#111621",
-                        "ice": "#C3E5F5"
+                        "primary": "#0df2f2",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#102222",
                     },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" }
+                    fontFamily: { "display": ["Inter", "sans-serif"] },
                 },
             },
         }
     </script>
     <style>
-        .material-symbols-outlined {
-            font-variation-settings:
-            'FILL' 0,
-            'wght' 400,
-            'GRAD' 0,
-            'opsz' 24
+        @keyframes fadeInSlide {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
+        .animate-login {
+            animation: fadeInSlide 0.8s ease-out forwards;
+        }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-immersive-blue-black dark:text-startup-white">
-<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-    <div class="layout-container flex h-full grow flex-col">
-        <main class="flex flex-1">
-            <div class="flex flex-1 flex-col items-center justify-center">
-                <div class="w-full max-w-6xl p-4 md:p-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 rounded-xl shadow-lg overflow-hidden bg-startup-white dark:bg-background-dark dark:border dark:border-white/10">
+<body class="bg-background-dark min-h-screen text-slate-100 flex items-center justify-center p-4">
 
-                        <!-- Left illustration block -->
-                        <div class="relative hidden md:flex flex-col justify-between p-10 bg-ice/60 dark:bg-black/20">
-                            <div class="z-10">
-                                <div class="flex items-center gap-3">
-                                    <span class="material-symbols-outlined text-resilient-turquoise text-3xl">inventory_2</span>
-                                    <h2 class="font-bold text-2xl text-immersive-blue-black dark:text-startup-white">Sistema de Inventario</h2>
-                                </div>
-                                <p class="text-lg mt-4 text-immersive-blue-black/70 dark:text-gray-300">
-                                    Control total de tu inventario.
-                                </p>
-                            </div>
-                            <div class="w-full h-full flex items-center justify-center">
-                                <div class="w-full aspect-square bg-center bg-no-repeat bg-contain"
-                                     style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuADGj51DgIAOHnNbS67CR2hmXwoL53xiq6dM4Lg4gHabL4AuASpor0O3N31ienw8vNNNSwUdjxJw0Ch_whe7uM9DkAEc-C9o-w4yv_AlX5AO6C4evI3jTQ9yoy5c1R3rUMw2z1vUgmrsPc-BRfkJy6wZQUdUnK2Z3On9Qliya5stehoQUfluxuxAQcNOk9HNbq4RF1ZrgHfOjpRvDdQeC1HteYJFi8k_w_bfD-lbAYjknEWGaU0jc2V2ltDFpAkaO93ENuF2uq1VLo");'></div>
-                            </div>
-                        </div>
+<div class="animate-login w-full max-w-5xl">
+    <div class="grid grid-cols-1 md:grid-cols-2 rounded-[2.5rem] shadow-2xl overflow-hidden bg-[#152a2a] border border-primary/10">
 
-                        <!-- Right form block -->
-                        <div class="flex flex-col justify-center p-8 sm:p-12">
-                            <h1 class="text-immersive-blue-black dark:text-startup-white tracking-tight text-[32px] font-bold leading-tight text-left">
-                                Bienvenido de nuevo
-                            </h1>
-                            <p class="text-immersive-blue-black/70 dark:text-gray-300 text-base font-normal leading-normal pt-1">
-                                Accede a tu cuenta para gestionar tu inventario.
-                            </p>
-                            <form action="Controlador/procesar_login.php" method="post" class="mt-8 flex flex-col gap-6">
-                                <!-- Usuario -->
-                                <div class="flex flex-col w-full">
-                                    <label class="text-immersive-blue-black dark:text-startup-white text-base font-medium leading-normal pb-2" for="nombreU">
-                                        Usuario
-                                    </label>
-                                    <div class="relative">
-                                        <span class="material-symbols-outlined text-immersive-blue-black/60 absolute left-3 top-1/2 -translate-y-1/2">person</span>
-                                        <input
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-immersive-blue-black dark:text-startup-white dark:bg-background-dark focus:outline-0 focus:ring-2 focus:ring-resilient-turquoise/50 border border-ice dark:border-white/20 bg-startup-white focus:border-resilient-turquoise h-14 placeholder:text-immersive-blue-black/60 pl-11 pr-4 py-[15px] text-base font-normal leading-normal"
-                                            type="text" id="nombreU" name="nombreU" required placeholder="Ingresa tu usuario"/>
-                                    </div>
-                                </div>
-                                <!-- Contraseña -->
-                                <div class="flex flex-col w-full">
-                                    <label class="text-immersive-blue-black dark:text-startup-white text-base font-medium leading-normal pb-2" for="pass">
-                                        Contraseña
-                                    </label>
-                                    <div class="relative flex w-full flex-1 items-stretch">
-                                        <span class="material-symbols-outlined text-immersive-blue-black/60 absolute left-3 top-1/2 -translate-y-1/2">lock</span>
-                                        <input
-                                            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-immersive-blue-black dark:text-startup-white dark:bg-background-dark focus:outline-0 focus:ring-2 focus:ring-resilient-turquoise/50 border border-ice dark:border-white/20 bg-startup-white focus:border-resilient-turquoise h-14 placeholder:text-immersive-blue-black/60 pl-11 pr-11 py-[15px] text-base font-normal leading-normal"
-                                            type="password" id="pass" name="pass" required placeholder="Ingresa tu contraseña"/>
-                                    </div>
-                                </div>
-
-                                <!-- Enlaces -->
-                                <div class="flex flex-wrap items-center justify-between gap-4">
-                                    <!-- espacio para recordar cuenta si quieres -->
-                                </div>
-                                <a href="Vista/vistaOlvidePass.php" class="text-resilient-turquoise hover:text-immersive-blue-black text-sm font-semibold">
-                                    ¿Olvidaste tu contraseña?
-                                </a>
-
-                                <button type="submit"
-                                        class="flex items-center justify-center text-center font-medium relative rounded-full px-6 py-3 h-14 w-full text-base bg-resilient-turquoise text-startup-white hover:bg-immersive-blue-black transition">
-                                    Iniciar Sesión
-                                </button>
-                            </form>
-                        </div>
-
+        <div class="relative hidden md:flex flex-col justify-between p-12 bg-gradient-to-br from-[#1a3535] to-background-dark">
+            <div class="z-10">
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
+                        <span class="material-symbols-outlined !text-2xl font-bold">inventory_2</span>
                     </div>
+                    <h2 class="text-xl font-black tracking-tight text-white uppercase">Donde Patty</h2>
+                </div>
+                <h1 class="text-4xl font-black text-white mt-10 leading-tight">
+                    Gestión de <br>
+                    <span class="text-primary">Inventario Pro</span>
+                </h1>
+                <p class="text-slate-400 mt-4 text-lg font-medium">
+                    Control absoluto de stock, movimientos y auditoría en tiempo real.
+                </p>
+            </div>
+
+            <div class="relative w-full aspect-square opacity-20 group">
+                <div class="absolute inset-0 bg-primary/20 blur-[100px] rounded-full"></div>
+                <div class="w-full h-full flex items-center justify-center">
+                    <span class="material-symbols-outlined !text-[180px] text-primary">analytics</span>
                 </div>
             </div>
-        </main>
+
+            <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">
+                © 2026 Junnior Achievement
+            </p>
+        </div>
+
+        <div class="flex flex-col justify-center p-8 sm:p-16 bg-white dark:bg-[#152a2a]">
+            <div class="mb-10 text-center md:text-left">
+                <h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Bienvenido</h2>
+                <p class="text-slate-500 dark:text-slate-400 font-medium mt-2">Ingresa tus credenciales de acceso</p>
+            </div>
+
+            <form action="Controlador/procesar_login.php" method="post" class="flex flex-col gap-5">
+                
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1" for="nombreU">Usuario</label>
+                    <div class="relative group">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">person</span>
+                        <input 
+                            class="w-full bg-slate-50 dark:bg-background-dark border-none rounded-2xl pl-12 pr-4 h-14 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            type="text" id="nombreU" name="nombreU" required placeholder="Nombre de usuario"/>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center px-1">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest" for="pass">Contraseña</label>
+                        <a href="Vista/vistaOlvidePass.php" class="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">¿Olvidaste?</a>
+                    </div>
+                    <div class="relative group">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">lock</span>
+                        <input 
+                            class="w-full bg-slate-50 dark:bg-background-dark border-none rounded-2xl pl-12 pr-4 h-14 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            type="password" id="pass" name="pass" required placeholder="••••••••"/>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="mt-4 w-full h-14 rounded-2xl bg-primary text-slate-900 font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                    <span>Acceder al Sistema</span>
+                    <span class="material-symbols-outlined !text-xl">login</span>
+                </button>
+            </form>
+
+            <div class="mt-12 text-center">
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-tighter">
+                    Acceso restringido para personal autorizado
+                </p>
+            </div>
+        </div>
+
     </div>
 </div>
+
 </body>
 </html>
