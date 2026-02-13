@@ -17,7 +17,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Junnior Achievement</title>
+    <title>Donde Patty - Panel de Inventario</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -32,6 +32,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                         "background-dark": "#102222",
                     },
                     fontFamily: { "display": ["Inter", "sans-serif"] },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "1rem", "full": "9999px" },
                 },
             },
         }
@@ -90,6 +91,10 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                         <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight"><?= $nombreUsuario ?></p>
                     </div>
                     <img alt="Avatar" class="size-11 rounded-full border-2 border-primary" src="https://ui-avatars.com/api/?name=<?= urlencode($nombreUsuario) ?>&background=0df2f2&color=102222"/>
+                    
+                    <a href="../Controlador/controladorCerrarSesion.php" class="p-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all ml-2" title="Cerrar Sesión">
+                        <span class="material-symbols-outlined">logout</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -180,7 +185,10 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     <span class="material-symbols-outlined">history</span> HISTORIAL DE MOVIMIENTOS
                 </a>
             </div>
-            <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">© 2026 Sistema Inventory Pro - Donde Patty</p>
+            <div class="flex items-center gap-4">
+                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">© 2026 Sistema Inventory - Junnior Achievement</p>
+                <a href="../Controlador/controladorCerrarSesion.php" class="text-rose-500 text-[10px] font-black uppercase tracking-widest hover:underline">CERRAR SESIÓN</a>
+            </div>
         </div>
     </footer>
 </div>
@@ -272,7 +280,6 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
 </div>
 
 <script>
-
 // Lógica de Modal para Salida
 const modalS = document.getElementById('modalSalida');
 const selProd = document.getElementById('modalIdProducto');
@@ -316,7 +323,6 @@ const inputBuscar = document.getElementById('inputBuscar');
 
 inputBuscar.addEventListener('input', function () {
     const termino = this.value.toLowerCase().trim();
-    // Selector corregido para las tarjetas
     const tarjetas = document.querySelectorAll('.tarjeta-producto'); 
 
     tarjetas.forEach(tarjeta => {
@@ -325,7 +331,6 @@ inputBuscar.addEventListener('input', function () {
         if (nombre.includes(termino)) {
             tarjeta.style.display = 'flex'; 
             tarjeta.classList.remove('animate-page');
-            // Forzar reinicio de animación
             void tarjeta.offsetWidth; 
             tarjeta.classList.add('animate-page');
         } else {
@@ -333,9 +338,6 @@ inputBuscar.addEventListener('input', function () {
         }
     });
 });
-
-
 </script>
-
 </body>
 </html>
