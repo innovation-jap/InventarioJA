@@ -193,6 +193,70 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
     </footer>
 </div>
 
+<div id="modalAgregar" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="cerrarModalAgregar()"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-white dark:bg-background-dark p-8 shadow-2xl border border-slate-100 dark:border-slate-800">
+            
+            <div class="flex items-center gap-4 mb-8">
+                <div class="bg-primary size-12 rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/30">
+                    <span class="material-symbols-outlined !text-2xl font-bold">add_box</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Nuevo Producto</h3>
+                    <p class="text-xs text-slate-500">Completa los datos para el inventario.</p>
+                </div>
+            </div>
+
+            <form method="POST" action="../Controlador/controladorProducto.php?accion=agregar" enctype="multipart/form-data" class="space-y-5">
+                <input type="hidden" name="accion" value="agregar" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Nombre</label>
+                        <input type="text" name="nombreP" required placeholder="Nombre del artículo"
+                               class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Ubicación</label>
+                        <select name="almacen" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white">
+                            <option value="Almacén 1">Almacén 1</option>
+                            <option value="Almacén 2">Almacén 2</option>
+                            <option value="Sótano">Sótano</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Descripción Detallada</label>
+                    <textarea name="descripcionP" rows="3" required placeholder="Características principales..."
+                              class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-4 text-sm focus:ring-2 focus:ring-primary/50 text-slate-900 dark:text-white resize-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Stock Inicial</label>
+                        <input type="number" name="stock" min="1" required placeholder="0"
+                               class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-lg font-black text-primary focus:ring-2 focus:ring-primary/50">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Foto del Producto</label>
+                        <div class="relative group">
+                            <input type="file" name="imagen" accept="image/*" 
+                                   class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer bg-slate-50 dark:bg-slate-800 rounded-xl py-2 px-2">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="cerrarModalAgregar()" class="flex-1 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 transition-all">CANCELAR</button>
+                    <button type="submit" class="flex-1 h-14 rounded-2xl bg-primary text-slate-900 font-black shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">GUARDAR PRODUCTO</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div id="modalSalida" class="hidden fixed inset-0 z-[100] overflow-y-auto">
     <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="cerrarModalSalida()"></div>
     <div class="flex min-h-full items-center justify-center p-4">
@@ -280,6 +344,15 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
 </div>
 
 <script>
+
+function abrirModalAgregar() {
+    document.getElementById('modalAgregar').classList.remove('hidden');
+}
+
+function cerrarModalAgregar() {
+    document.getElementById('modalAgregar').classList.add('hidden');
+}
+
 // Lógica de Modal para Salida
 const modalS = document.getElementById('modalSalida');
 const selProd = document.getElementById('modalIdProducto');
