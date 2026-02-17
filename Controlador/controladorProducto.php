@@ -38,7 +38,6 @@ $datos  = [];
 
 /* -------------------- AGREGAR -------------------- */
 if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
-
     $nombreP      = trim($_POST['nombreP'] ?? '');
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
@@ -48,20 +47,19 @@ if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
     $rutaImagen = null; 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
         $nombreArchivo = time() . "_" . basename($_FILES['imagen']['name']);
+        // IMPORTANTE: Asegúrate de que la carpeta 'uploads' exista en la raíz
         $directorioDestino = __DIR__ . "/../uploads/";
         
-        // Crear carpeta si no existe
         if (!is_dir($directorioDestino)) { mkdir($directorioDestino, 0777, true); }
         
         $rutaFisica = $directorioDestino . $nombreArchivo;
         if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
-            // Guardamos una ruta relativa para que sea fácil de mostrar en el HTML
             $rutaImagen = "../uploads/" . $nombreArchivo;
         }
     }
 
     if ($nombreP && $stock >= 0) {
-        // Pasamos el nuevo parámetro $rutaImagen al modelo
+        // LLAMADA CORREGIDA: Pasamos 6 parámetros en total
         $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen, $rutaImagen);
     }
 
@@ -83,17 +81,25 @@ if ($accion === 'eliminar' && isset($_GET['id'])) {
 
 /* -------------------- EDITAR -------------------- */
 if ($accion === 'editar' && $_SERVER["REQUEST_METHOD"] === "POST") {
-
     $idProducto   = $_POST['idProducto']; 
     $nombreP      = trim($_POST['nombreP'] ?? '');
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
-    // NUEVO: Capturar la nueva ubicación del almacén en la edición
     $almacen      = $_POST['almacen'] ?? ''; 
 
+    // Opcional: Lógica de imagen para edición
+    $rutaImagen = $_POST['imagenActual'] ?? null; // Mantener la anterior si no se sube nada
+    if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+        $nombreArchivo = time() . "_" . basename($_FILES['imagen']['name']);
+        $directorioDestino = __DIR__ . "/../uploads/";
+        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $directorioDestino . $nombreArchivo)) {
+            $rutaImagen = "../uploads/" . $nombreArchivo;
+        }
+    }
+
     if (!empty($idProducto) && $nombreP && $stock >= 0) {
-        // CAMBIO: Se añade el parámetro $almacen (asegúrate de que tu modeloProducto->actualizarProducto ahora acepte este 4to parámetro)
-        $modelo->actualizarProducto($idProducto, $nombreP, $descripcionP, $stock, $almacen);
+        // Nota: Deberás agregar $rutaImagen como 5to parámetro en modeloProducto->actualizarProducto
+        $modelo->actualizarProducto($idProducto, $nombreP, $descripcionP, $stock, $almacen, $rutaImagen);
     }
 
     header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
