@@ -43,16 +43,31 @@ if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
     $almacen      = $_POST['almacen'] ?? 'Almacen 1';
+    
+    // LÓGICA DE IMAGEN
+    $rutaImagen = null; 
+    if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+        $nombreArchivo = time() . "_" . basename($_FILES['imagen']['name']);
+        $directorioDestino = __DIR__ . "/../uploads/";
+        
+        // Crear carpeta si no existe
+        if (!is_dir($directorioDestino)) { mkdir($directorioDestino, 0777, true); }
+        
+        $rutaFisica = $directorioDestino . $nombreArchivo;
+        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
+            // Guardamos una ruta relativa para que sea fácil de mostrar en el HTML
+            $rutaImagen = "../uploads/" . $nombreArchivo;
+        }
+    }
 
     if ($nombreP && $stock >= 0) {
-        // Pasamos el idUsuario (string) al modelo
-        $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen);
+        // Pasamos el nuevo parámetro $rutaImagen al modelo
+        $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen, $rutaImagen);
     }
 
     header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
     exit();
 }
-
 /* -------------------- ELIMINAR -------------------- */
 if ($accion === 'eliminar' && isset($_GET['id'])) {
 
