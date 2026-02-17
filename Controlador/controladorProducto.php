@@ -42,42 +42,33 @@ if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
     $nombreP      = trim($_POST['nombreP'] ?? '');
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
-    $almacen      = $_POST['almacen'] ?? 'Almacén 1';
+    $almacen      = $_POST['almacen'] ?? 'Almacen 1';
     
-    // URL por defecto si no hay imagen
-    $rutaImagen = "https://placehold.co/600x400/102222/0df2f2?text=" . urlencode($nombreP); 
-
+    // LÓGICA DE IMAGEN MEJORADA
+    $rutaImagen = null; 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+        // Generamos un nombre único para evitar que Matías sobrescriba fotos iguales
+        $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
+        $nombreArchivo = time() . "_" . bin2hex(random_bytes(4)) . "." . $extension;
         
-        // --- CONFIGURACIÓN CLOUDINARY ---
-        $cloud_name = "TU_CLOUD_NAME";    // Reemplaza con tu Cloud Name
-        $upload_preset = "TU_PRESET";     // Reemplaza con tu Preset Unsigned
+        // Ruta física absoluta para PHP (subir un nivel desde /Controlador a la raíz)
+        $directorioDestino = __DIR__ . "/../uploads/";
         
-        $file_tmp = $_FILES['imagen']['tmp_name'];
+        // Crear carpeta con permisos si no existe
+        if (!is_dir($directorioDestino)) { 
+            mkdir($directorioDestino, 0777, true); 
+        }
         
-        $url = "https://api.cloudinary.com/v1_1/$cloud_name/image/upload";
+        $rutaFisica = $directorioDestino . $nombreArchivo;
         
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, [
-            'file' => new CURLFile($file_tmp),
-            'upload_preset' => $upload_preset
-        ]);
-        
-        $response = curl_exec($ch);
-        $result = json_decode($response, true);
-        curl_close($ch);
-
-        // Si la subida fue exitosa, Cloudinary nos devuelve 'secure_url'
-        if (isset($result['secure_url'])) {
-            $rutaImagen = $result['secure_url']; 
+        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
+            // Guardamos la ruta relativa para que el HTML la encuentre desde la raíz
+            $rutaImagen = "../uploads/" . $nombreArchivo;
         }
     }
 
     if ($nombreP && $stock >= 0) {
-        // El modelo ya está listo para recibir este string de URL
+        // Pasamos los 6 parámetros al modelo
         $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen, $rutaImagen);
     }
 
