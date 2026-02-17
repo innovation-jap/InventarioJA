@@ -38,28 +38,37 @@ $datos  = [];
 
 /* -------------------- AGREGAR -------------------- */
 if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
+
     $nombreP      = trim($_POST['nombreP'] ?? '');
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
     $almacen      = $_POST['almacen'] ?? 'Almacen 1';
     
-    // LÓGICA DE IMAGEN
+    // LÓGICA DE IMAGEN MEJORADA
     $rutaImagen = null; 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-        $nombreArchivo = time() . "_" . basename($_FILES['imagen']['name']);
-        // IMPORTANTE: Asegúrate de que la carpeta 'uploads' exista en la raíz
+        // Generamos un nombre único para evitar que Matías sobrescriba fotos iguales
+        $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
+        $nombreArchivo = time() . "_" . bin2hex(random_bytes(4)) . "." . $extension;
+        
+        // Ruta física absoluta para PHP (subir un nivel desde /Controlador a la raíz)
         $directorioDestino = __DIR__ . "/../uploads/";
         
-        if (!is_dir($directorioDestino)) { mkdir($directorioDestino, 0777, true); }
+        // Crear carpeta con permisos si no existe
+        if (!is_dir($directorioDestino)) { 
+            mkdir($directorioDestino, 0777, true); 
+        }
         
         $rutaFisica = $directorioDestino . $nombreArchivo;
+        
         if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
+            // Guardamos la ruta relativa para que el HTML la encuentre desde la raíz
             $rutaImagen = "../uploads/" . $nombreArchivo;
         }
     }
 
     if ($nombreP && $stock >= 0) {
-        // LLAMADA CORREGIDA: Pasamos 6 parámetros en total
+        // Pasamos los 6 parámetros al modelo
         $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen, $rutaImagen);
     }
 

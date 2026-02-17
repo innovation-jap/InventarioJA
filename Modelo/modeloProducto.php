@@ -33,14 +33,15 @@ class modeloProducto {
         AGREGAR PRODUCTO + MOVIMIENTO
     ============================ */
     // CAMBIO: Añadimos $almacen como parámetro
-    public function agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen) {
+    public function agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen, $imagen = null) {
         try {
             $nuevoProducto = [
                 'idUsuario' => new ObjectId($idUsuario), 
                 'nombreP' => $nombreP,
                 'descripcionP' => $descripcionP,
                 'stock' => (int)$stock,
-                'almacen' => $almacen, // Ahora sí se guardará el valor
+                'almacen' => $almacen,
+                'imagen' => $imagen, // Se guarda la ruta o URL
                 'fechaI' => new UTCDateTime()
             ];
             
@@ -57,29 +58,38 @@ class modeloProducto {
             ]);
 
             return $idProducto;
-
         } catch (Exception $e) {
             return false;
         }
     }
-
     /* ===========================
         ACTUALIZAR PRODUCTO
     ============================ */
     // CAMBIO: Añadimos $almacen para que la edición rápida también lo actualice
-    public function actualizarProducto($idProducto, $nombreP, $descripcionP, $stock, $almacen) {
+    public function actualizarProducto($idProducto, $nombreP, $descripcionP, $stock, $almacen, $imagen = null) {
+    try {
+        $datosActualizar = [
+            'nombreP' => $nombreP,
+            'descripcionP' => $descripcionP,
+            'stock' => (int)$stock,
+            'almacen' => $almacen
+        ];
+
+        // Solo añadimos la imagen al set si no es null
+        if ($imagen !== null) {
+            $datosActualizar['imagen'] = $imagen;
+        }
+
         $resultado = $this->db->producto->updateOne(
             ['_id' => new ObjectId($idProducto)],
-            ['$set' => [
-                'nombreP' => $nombreP,
-                'descripcionP' => $descripcionP,
-                'stock' => (int)$stock,
-                'almacen' => $almacen // Permite cambiar el almacén al editar
-            ]]
+            ['$set' => $datosActualizar]
         );
+        
         return $resultado->getModifiedCount() > 0;
+    } catch (Exception $e) {
+        return false;
     }
-
+}
     /* ===========================
         ELIMINAR PRODUCTO + MOVIMIENTOS
     ============================ */
