@@ -1,12 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION['idUsuario'])) {
-    header("Location: ../index.php");
-    exit();
-}
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+if (!isset($_SESSION['idUsuario'])) { header("Location: ../index.php"); exit(); }
 
 $nombreUsuario = htmlspecialchars($_SESSION['nombreU'] ?? 'Usuario');
 $paginaActual = $datos['paginaActual'] ?? 1;
@@ -38,10 +32,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
         }
     </script>
     <style>
-        @keyframes fadeInSlide {
-            0% { opacity: 0; transform: translateY(15px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeInSlide { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
         .animate-page { animation: fadeInSlide 0.5s ease-out forwards; }
         .nav-tabs { min-width: 320px; display: inline-flex; }
     </style>
@@ -56,35 +47,26 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined !text-2xl font-bold">inventory_2</span>
                     </div>
-                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Junnior Achievement</h2>
+                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Donde Patty</h2>
                 </div>
             </div>
-
             <div class="flex items-center gap-6">
                 <div class="hidden md:flex items-center ml-10">
                     <div class="relative group">
                         <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
-                        <input id="inputBuscar" 
-                            class="w-80 bg-slate-100 dark:bg-background-dark/50 border-none rounded-xl pl-12 pr-4 h-11 focus:ring-2 focus:ring-primary/50 text-sm transition-all text-slate-900 dark:text-white" 
-                            placeholder="Buscar por nombre..." 
-                            type="text"/>
+                        <input id="inputBuscar" class="w-80 bg-slate-100 dark:bg-background-dark/50 border-none rounded-xl pl-12 pr-4 h-11 focus:ring-2 focus:ring-primary/50 text-sm transition-all text-slate-900 dark:text-white" placeholder="Buscar por nombre..." type="text"/>
                     </div>
                 </div>
-                
                 <button onclick="abrirModalAgregar()" class="bg-primary hover:bg-primary/80 text-slate-900 px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
-                    <span class="material-symbols-outlined">add</span>
-                    <span class="hidden sm:inline">Nuevo producto</span>
+                    <span class="material-symbols-outlined">add</span><span class="hidden sm:inline">Nuevo producto</span>
                 </button>
-
                 <div class="flex items-center gap-3 pl-6 border-l border-slate-200 dark:border-slate-700">
                     <div class="text-right hidden sm:block">
                         <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sesión de</p>
                         <p class="text-sm font-bold text-slate-900 dark:text-white leading-tight"><?= $nombreUsuario ?></p>
                     </div>
                     <img alt="Avatar" class="size-11 rounded-full border-2 border-primary" src="https://ui-avatars.com/api/?name=<?= urlencode($nombreUsuario) ?>&background=0df2f2&color=102222"/>
-                    <a href="../Controlador/controladorCerrarSesion.php" class="p-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all ml-2" title="Cerrar Sesión">
-                        <span class="material-symbols-outlined">logout</span>
-                    </a>
+                    <a href="../Controlador/controladorCerrarSesion.php" class="p-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all ml-2" title="Cerrar Sesión"><span class="material-symbols-outlined">logout</span></a>
                 </div>
             </div>
         </div>
@@ -108,41 +90,27 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                 <?php foreach ($datos['productos'] as $prod) : 
                     $idStr = (string)$prod['_id'];
                     $stock = $prod['stock'] ?? 0;
+                    // Lógica para mostrar imagen guardada o placeholder
+                    $rutaImagen = !empty($prod['imagen']) ? $prod['imagen'] : 'https://placehold.co/600x400/102222/0df2f2?text='.urlencode($prod['nombreP']);
                 ?>
                 <div class="tarjeta-producto bg-white dark:bg-background-dark/80 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden group hover:shadow-2xl transition-all duration-300 flex flex-col">
                     <div class="relative h-48 w-full overflow-hidden bg-slate-100">
-                        <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="https://placehold.co/600x400/102222/0df2f2?text=<?= urlencode($prod['nombreP']) ?>"/>
+                        <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" src="<?= $rutaImagen ?>"/>
                         <div class="absolute top-4 left-4">
-                            <span class="bg-primary/90 text-slate-900 text-[10px] font-black px-3 py-1.5 rounded-lg shadow-xl uppercase tracking-widest">
-                                <?= htmlspecialchars($prod['almacen'] ?? 'General') ?>
-                            </span>
+                            <span class="bg-primary/90 text-slate-900 text-[10px] font-black px-3 py-1.5 rounded-lg shadow-xl uppercase tracking-widest"><?= htmlspecialchars($prod['almacen'] ?? 'General') ?></span>
                         </div>
                     </div>
-
                     <div class="p-6 flex-1 flex flex-col">
                         <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2 leading-tight"><?= htmlspecialchars($prod['nombreP']) ?></h3>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 line-clamp-3"><?= htmlspecialchars($prod['descripcionP'] ?? 'Sin descripción adicional.') ?></p>
-                        
+                        <p class="text-slate-500 dark:text-slate-400 text-sm mb-4 line-clamp-3"><?= htmlspecialchars($prod['descripcionP'] ?? 'Sin descripción.') ?></p>
                         <div class="mt-auto pt-4 border-t border-slate-50 dark:border-slate-800">
                             <div class="flex items-center justify-between">
-                                <div class="flex flex-col">
-                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Disponible</span>
-                                    <span class="text-2xl font-black <?= $stock <= 5 ? 'text-rose-500 animate-pulse' : 'text-slate-900 dark:text-white' ?>"><?= $stock ?></span>
-                                </div>
-                                
+                                <div class="flex flex-col"><span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Stock</span><span class="text-2xl font-black <?= $stock <= 5 ? 'text-rose-500 animate-pulse' : 'text-slate-900 dark:text-white' ?>"><?= $stock ?></span></div>
                                 <div class="flex items-center gap-1">
-                                    <button onclick="abrirModalSalida('<?= $idStr ?>')" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-500 hover:text-white transition-all">
-                                        <span class="material-symbols-outlined">trending_down</span>
-                                    </button>
-                                    <button onclick="abrirModalDevolucion('<?= $idStr ?>', '<?= htmlspecialchars($prod['nombreP']) ?>')" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all">
-                                        <span class="material-symbols-outlined">undo</span>
-                                    </button>
-                                    <a href="?accion=listar&editar=<?= urlencode($idStr) ?>" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary transition-all">
-                                        <span class="material-symbols-outlined">edit</span>
-                                    </a>
-                                    <a href="../Controlador/controladorProducto.php?accion=eliminar&id=<?= urlencode($idStr) ?>" onclick="return confirm('¿Eliminar producto?');" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-rose-600 hover:text-white transition-all">
-                                        <span class="material-symbols-outlined">delete</span>
-                                    </a>
+                                    <button onclick="abrirModalSalida('<?= $idStr ?>')" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"><span class="material-symbols-outlined">trending_down</span></button>
+                                    <button onclick="abrirModalDevolucion('<?= $idStr ?>', '<?= htmlspecialchars($prod['nombreP']) ?>')" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"><span class="material-symbols-outlined">undo</span></button>
+                                    <a href="?accion=listar&editar=<?= urlencode($idStr) ?>" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary transition-all"><span class="material-symbols-outlined">edit</span></a>
+                                    <a href="../Controlador/controladorProducto.php?accion=eliminar&id=<?= urlencode($idStr) ?>" onclick="return confirm('¿Eliminar?');" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-rose-600 hover:text-white transition-all"><span class="material-symbols-outlined">delete</span></a>
                                 </div>
                             </div>
                         </div>
@@ -154,42 +122,45 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
     </main>
 
     <footer class="bg-white dark:bg-[#152a2a] border-t border-slate-100 dark:border-slate-800 py-8 mt-10">
-        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div class="flex items-center gap-8">
-                <button onclick="abrirModalSalida()" class="text-slate-600 dark:text-slate-400 hover:text-rose-500 font-bold flex items-center gap-2 transition-colors uppercase text-sm tracking-widest">
-                    <span class="material-symbols-outlined">logout</span> REGISTRAR SALIDA
-                </button>
-                <a href="../Controlador/controladorProducto.php?accion=movimientos" class="text-slate-600 dark:text-slate-400 hover:text-primary font-bold flex items-center gap-2 transition-colors uppercase text-sm tracking-widest">
-                    <span class="material-symbols-outlined">history</span> HISTORIAL
-                </a>
-            </div>
-            <div class="flex items-center gap-4">
-                <p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">© 2026 Sistema Inventory - Junnior Achievement</p>
-                <a href="../Controlador/controladorCerrarSesion.php" class="text-rose-500 text-[10px] font-black uppercase tracking-widest hover:underline">CERRAR SESIÓN</a>
-            </div>
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+            <div class="flex items-center gap-8"><button onclick="abrirModalSalida()" class="text-slate-600 dark:text-slate-400 hover:text-rose-500 font-bold flex items-center gap-2 transition-colors uppercase text-xs tracking-widest"><span class="material-symbols-outlined">logout</span> REGISTRAR SALIDA</button><a href="../Controlador/controladorProducto.php?accion=movimientos" class="text-slate-600 dark:text-slate-400 hover:text-primary font-bold flex items-center gap-2 transition-colors uppercase text-xs tracking-widest"><span class="material-symbols-outlined">history</span> HISTORIAL</a></div>
+            <div class="flex items-center gap-4"><p class="text-slate-400 text-[10px] font-black uppercase tracking-widest">© 2026 Sistema Inventory</p><a href="../Controlador/controladorCerrarSesion.php" class="text-rose-500 text-[10px] font-black uppercase tracking-widest hover:underline">CERRAR SESIÓN</a></div>
         </div>
     </footer>
 </div>
 
 <div id="modalAgregar" class="hidden fixed inset-0 z-[100] overflow-y-auto">
-    <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" onclick="cerrarModalAgregar()"></div>
+    <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm" onclick="cerrarModalAgregar()"></div>
     <div class="flex min-h-full items-center justify-center p-4">
-        <div class="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-white dark:bg-background-dark p-8 shadow-2xl border border-slate-100 dark:border-slate-800">
+        <div class="relative w-full max-w-2xl bg-white dark:bg-background-dark p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl">
             <div class="flex items-center gap-4 mb-8">
                 <div class="bg-primary size-12 rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20"><span class="material-symbols-outlined !text-2xl font-bold">add_box</span></div>
                 <div><h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Nuevo Producto</h3><p class="text-xs text-slate-500">Añadir al inventario.</p></div>
             </div>
+            
             <form method="POST" action="../Controlador/controladorProducto.php?accion=agregar" enctype="multipart/form-data" class="space-y-5">
-                <input type="hidden" name="accion" value="agregar" />
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div class="space-y-2"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Nombre</label><input type="text" name="nombreP" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-sm text-slate-900 dark:text-white"></div>
-                    <div class="space-y-2"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Ubicación</label><select name="almacen" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-sm text-slate-900 dark:text-white"><option value="Almacén 1">Almacén 1</option><option value="Almacén 2">Almacén 2</option><option value="Sótano">Sótano</option></select></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <div class="space-y-1"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Nombre</label><input type="text" name="nombreP" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-11 px-4 text-sm text-slate-900 dark:text-white"></div>
+                        <div class="space-y-1"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Ubicación</label><select name="almacen" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-11 px-4 text-sm text-slate-900 dark:text-white"><option value="Almacén 1">Almacén 1</option><option value="Almacén 2">Almacén 2</option><option value="Sótano">Sótano</option></select></div>
+                        <div class="space-y-1"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Stock inicial</label><input type="number" name="stock" min="1" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-11 px-4 text-lg font-black text-primary"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Imagen del producto</label>
+                        <div id="previewContainer" class="relative w-full h-40 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden">
+                            <img id="imgPreview" src="" class="hidden w-full h-full object-cover">
+                            <div id="previewPlaceholder" class="text-center p-4">
+                                <span class="material-symbols-outlined text-slate-300 !text-4xl">add_a_photo</span>
+                                <p class="text-[10px] text-slate-400 font-bold mt-2 uppercase">Click para subir</p>
+                            </div>
+                            <input type="file" name="imagen" id="inputImagen" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                    </div>
                 </div>
-                <div class="space-y-2"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Descripción</label><textarea name="descripcionP" rows="3" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-4 text-sm text-slate-900 dark:text-white resize-none"></textarea></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div class="space-y-2"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Stock</label><input type="number" name="stock" min="1" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-12 px-4 text-lg font-black text-primary"></div>
-                    <div class="space-y-2"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Imagen</label><input type="file" name="imagen" accept="image/*" class="w-full bg-slate-50 dark:bg-slate-800 rounded-xl py-2 px-2 text-xs"></div>
-                </div>
+
+                <div class="space-y-1"><label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Descripción</label><textarea name="descripcionP" rows="2" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-4 text-sm text-slate-900 dark:text-white resize-none"></textarea></div>
+
                 <div class="flex gap-3 pt-4">
                     <button type="button" onclick="cerrarModalAgregar()" class="flex-1 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 font-bold hover:bg-slate-200 transition-all">CANCELAR</button>
                     <button type="submit" class="flex-1 h-14 rounded-2xl bg-primary text-slate-900 font-black shadow-xl shadow-primary/20 transition-all">GUARDAR</button>
@@ -228,7 +199,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
             <div class="flex items-center gap-4 mb-8"><div class="bg-emerald-500 size-12 rounded-2xl flex items-center justify-center text-white"><span class="material-symbols-outlined font-bold">undo</span></div><div><h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Devolución</h3></div></div>
             <form method="POST" action="../Controlador/controladorProducto.php?accion=devolucion" class="space-y-6">
                 <input type="hidden" name="idProducto" id="modalDevId">
-                <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl"><p id="modalDevNombre" class="font-bold text-slate-900 dark:text-white text-lg">---</p></div>
+                <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl text-center"><p id="modalDevNombre" class="font-bold text-slate-900 dark:text-white text-lg">---</p></div>
                 <input type="number" name="cantidad" min="1" required placeholder="Cantidad a reponer" class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-14 px-4 text-lg font-black text-emerald-500">
                 <div class="flex gap-3"><button type="button" onclick="cerrarModalDevolucion()" class="flex-1 h-14 rounded-2xl bg-slate-100 text-slate-600 font-bold">CANCELAR</button><button type="submit" class="flex-1 h-14 rounded-2xl bg-emerald-500 text-white font-black">CONFIRMAR</button></div>
             </form>
@@ -239,8 +210,32 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
 <script>
 // FUNCIONES MODALES
 function abrirModalAgregar() { document.getElementById('modalAgregar').classList.remove('hidden'); }
-function cerrarModalAgregar() { document.getElementById('modalAgregar').classList.add('hidden'); }
+function cerrarModalAgregar() { 
+    document.getElementById('modalAgregar').classList.add('hidden');
+    // Limpiar preview al cerrar
+    document.getElementById('imgPreview').src = "";
+    document.getElementById('imgPreview').classList.add('hidden');
+    document.getElementById('previewPlaceholder').classList.remove('hidden');
+}
 
+// PREVISUALIZACIÓN DE IMAGEN
+document.getElementById('inputImagen').addEventListener('change', function(e) {
+    const reader = new FileReader();
+    const preview = document.getElementById('imgPreview');
+    const placeholder = document.getElementById('previewPlaceholder');
+    
+    reader.onload = function() {
+        preview.src = reader.result;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+    }
+    
+    if(e.target.files[0]) {
+        reader.readAsDataURL(e.target.files[0]);
+    }
+});
+
+// Lógica de Salida
 const modalS = document.getElementById('modalSalida');
 const selProd = document.getElementById('modalIdProducto');
 const labStock = document.getElementById('modalStockLabel');
@@ -249,6 +244,7 @@ function cerrarModalSalida() { modalS.classList.add('hidden'); }
 function actualizarLabel() { const opt = selProd.options[selProd.selectedIndex]; labStock.value = opt.getAttribute('data-stock') || '0'; }
 selProd.addEventListener('change', actualizarLabel);
 
+// Lógica de Devolución
 const modalD = document.getElementById('modalDevolucion');
 const devId = document.getElementById('modalDevId');
 const devNombre = document.getElementById('modalDevNombre');
