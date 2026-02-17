@@ -11,7 +11,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Junnior Achievement - Panel de Inventario</title>
+    <title>Donde Patty - Panel de Inventario</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -47,7 +47,7 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                     <div class="bg-primary size-10 rounded-xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
                         <span class="material-symbols-outlined !text-2xl font-bold">inventory_2</span>
                     </div>
-                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Junnior Achievement</h2>
+                    <h2 class="text-xl font-black tracking-tight text-slate-900 dark:text-white uppercase">Donde Patty</h2>
                 </div>
             </div>
             <div class="flex items-center gap-6">
