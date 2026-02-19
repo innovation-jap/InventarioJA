@@ -88,8 +88,8 @@ $current_fecha_fin = $_GET['fecha_fin'] ?? '';
         
         <div class="flex mb-10">
             <div class="nav-tabs bg-white dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                <a href="../Controlador/controladorProducto.php?accion=listar" class="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-center">Inventario</a>
-                <a href="#" class="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-slate-900 shadow-md text-center">Movimientos</a>
+                <a href="../Controlador/controladorProducto.php?accion=listar" class="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-center">INVENTARIO</a>
+                <a href="#" class="flex-1 px-6 py-2.5 rounded-xl text-sm font-bold bg-primary text-slate-900 shadow-md text-center">MOVIMIENTOS</a>
             </div>
         </div>
 
