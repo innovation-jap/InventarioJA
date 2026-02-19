@@ -109,7 +109,10 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
                                 <div class="flex items-center gap-1">
                                     <button onclick="abrirModalSalida('<?= $idStr ?>')" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"><span class="material-symbols-outlined">trending_down</span></button>
                                     <button onclick="abrirModalDevolucion('<?= $idStr ?>', '<?= htmlspecialchars($prod['nombreP']) ?>')" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all"><span class="material-symbols-outlined">undo</span></button>
-                                    <a href="?accion=listar&editar=<?= urlencode($idStr) ?>" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary transition-all"><span class="material-symbols-outlined">edit</span></a>
+                                    <button onclick="abrirModalEditar('<?= $idStr ?>', '<?= htmlspecialchars($prod['nombreP']) ?>', '<?= htmlspecialchars($prod['descripcionP'] ?? '') ?>', '<?= $stock ?>', '<?= htmlspecialchars($prod['almacen'] ?? 'Almacén 1') ?>', '<?= $prod['imagen'] ?? '' ?>')" 
+        class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary transition-all">
+    <span class="material-symbols-outlined">edit</span>
+</button>
                                     <a href="../Controlador/controladorProducto.php?accion=eliminar&id=<?= urlencode($idStr) ?>" onclick="return confirm('¿Eliminar?');" class="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-400 hover:bg-rose-600 hover:text-white transition-all"><span class="material-symbols-outlined">delete</span></a>
                                 </div>
                             </div>
@@ -207,6 +210,70 @@ $totalPaginas = $datos['totalPaginas'] ?? 1;
     </div>
 </div>
 
+<div id="modalEditar" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm" onclick="cerrarModalEditar()"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl bg-white dark:bg-background-dark p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-2xl">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="bg-primary size-12 rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shadow-primary/20">
+                    <span class="material-symbols-outlined !text-2xl font-bold">edit_square</span>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Editar Producto</h3>
+                    <p class="text-xs text-slate-500">Actualizar información en la nube.</p>
+                </div>
+            </div>
+            
+            <form method="POST" action="../Controlador/controladorProducto.php?accion=editar" enctype="multipart/form-data" class="space-y-5">
+                <input type="hidden" name="idProducto" id="edit_id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Nombre</label>
+                            <input type="text" name="nombreP" id="edit_nombre" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-11 px-4 text-sm text-slate-900 dark:text-white">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Ubicación</label>
+                            <select name="almacen" id="edit_almacen" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-11 px-4 text-sm text-slate-900 dark:text-white">
+                                <option value="Almacén 1">Almacén 1</option>
+                                <option value="Almacén 2">Almacén 2</option>
+                                <option value="Sótano">Sótano</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Stock</label>
+                            <input type="number" name="stock" id="edit_stock" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl h-11 px-4 text-lg font-black text-primary">
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Nueva Imagen (Opcional)</label>
+                        <div class="relative w-full h-40 rounded-2xl bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden">
+                            <img id="edit_imgPreview" src="" class="hidden w-full h-full object-cover">
+                            <div id="edit_previewPlaceholder" class="text-center p-4">
+                                <span class="material-symbols-outlined text-slate-300 !text-4xl">cloud_upload</span>
+                                <p class="text-[10px] text-slate-400 font-bold mt-2 uppercase">Subir a Cloudinary</p>
+                            </div>
+                            <input type="file" name="imagen" id="edit_inputImagen" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest">Descripción</label>
+                    <textarea name="descripcionP" id="edit_descripcion" rows="2" required class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl p-4 text-sm text-slate-900 dark:text-white resize-none"></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="cerrarModalEditar()" class="flex-1 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 font-bold hover:bg-slate-200 transition-all">CANCELAR</button>
+                    <button type="submit" class="flex-1 h-14 rounded-2xl bg-primary text-slate-900 font-black shadow-xl shadow-primary/20 transition-all">ACTUALIZAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 // FUNCIONES MODALES
 function abrirModalAgregar() { document.getElementById('modalAgregar').classList.remove('hidden'); }
@@ -233,6 +300,44 @@ document.getElementById('inputImagen').addEventListener('change', function(e) {
     if(e.target.files[0]) {
         reader.readAsDataURL(e.target.files[0]);
     }
+});
+// MODAL DE EDITAR
+function abrirModalEditar(id, nombre, desc, stock, almacen, imagen) {
+    document.getElementById('edit_id').value = id;
+    document.getElementById('edit_nombre').value = nombre;
+    document.getElementById('edit_descripcion').value = desc;
+    document.getElementById('edit_stock').value = stock;
+    document.getElementById('edit_almacen').value = almacen;
+    
+    const preview = document.getElementById('edit_imgPreview');
+    const placeholder = document.getElementById('edit_previewPlaceholder');
+    
+    if(imagen) {
+        preview.src = imagen;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+    } else {
+        preview.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+    }
+    
+    document.getElementById('modalEditar').classList.remove('hidden');
+}
+
+function cerrarModalEditar() {
+    document.getElementById('modalEditar').classList.add('hidden');
+}
+
+// Previsualización para el modal de editar
+document.getElementById('edit_inputImagen').addEventListener('change', function(e) {
+    const reader = new FileReader();
+    reader.onload = function() {
+        const preview = document.getElementById('edit_imgPreview');
+        preview.src = reader.result;
+        preview.classList.remove('hidden');
+        document.getElementById('edit_previewPlaceholder').classList.add('hidden');
+    }
+    if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
 });
 
 // Lógica de Salida
