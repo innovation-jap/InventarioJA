@@ -3,85 +3,62 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-/* ============================================================
- * Includes y configuración
- * ============================================================ */
 require_once __DIR__ . "/../config.php";
 require_once __DIR__ . "/../Modelo/modeloProducto.php";
 require_once __DIR__ . "/../Modelo/modeloMovimientos.php";
 require_once __DIR__ . "/../Modelo/conexion.php";
 
-/* ============================================================
- * Verificar sesión
- * ============================================================ */
-// En MongoDB el idUsuario en la sesión debe ser el string del _id
 $idUsuario = $_SESSION['idUsuario'] ?? null;
-
 if (!$idUsuario) {
     header("Location: " . BASE_URL . "index.php");
     exit();
 }
 
-/* ============================================================
- * Conexión y modelos (MongoDB)
- * ============================================================ */
-// Los modelos ahora gestionan su propia conexión internamente
 $modelo    = new modeloProducto();
 $modeloMov = new modeloMovimientos();
-
 $accion = $_GET['accion'] ?? $_POST['accion'] ?? 'listar';
-$datos  = [];
 
-/* ============================================================
- * =============== ACCIONES CRUD + MOVIMIENTOS ===============
- * ============================================================ */
+/**
+ * Función para subir a Cloudinary con tus datos: dtj2hwjcx / inventario_preset
+ */
+function subirCloudinary($file_tmp) {
+    $cloud_name = "dtj2hwjcx";       
+    $upload_preset = "inventario_preset"; 
+    
+    $url = "https://api.cloudinary.com/v1_1/$cloud_name/image/upload";
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, [
+        'file' => new CURLFile($file_tmp),
+        'upload_preset' => $upload_preset
+    ]);
+    
+    $response = curl_exec($ch);
+    $result = json_decode($response, true);
+    curl_close($ch);
+
+    return $result['secure_url'] ?? null;
+}
 
 /* -------------------- AGREGAR -------------------- */
 if ($accion === 'agregar' && $_SERVER["REQUEST_METHOD"] === "POST") {
-
     $nombreP      = trim($_POST['nombreP'] ?? '');
     $descripcionP = trim($_POST['descripcionP'] ?? '');
     $stock        = (int)($_POST['stock'] ?? 0);
-    $almacen      = $_POST['almacen'] ?? 'Almacen 1';
+    $almacen      = $_POST['almacen'] ?? 'Almacén 1';
     
-    // LÓGICA DE IMAGEN MEJORADA
-    $rutaImagen = null; 
+    $rutaImagen = "https://placehold.co/600x400/102222/0df2f2?text=" . urlencode($nombreP);
+
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-        // Generamos un nombre único para evitar que Matías sobrescriba fotos iguales
-        $extension = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
-        $nombreArchivo = time() . "_" . bin2hex(random_bytes(4)) . "." . $extension;
-        
-        // Ruta física absoluta para PHP (subir un nivel desde /Controlador a la raíz)
-        $directorioDestino = __DIR__ . "/../uploads/";
-        
-        // Crear carpeta con permisos si no existe
-        if (!is_dir($directorioDestino)) { 
-            mkdir($directorioDestino, 0777, true); 
-        }
-        
-        $rutaFisica = $directorioDestino . $nombreArchivo;
-        
-        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaFisica)) {
-            // Guardamos la ruta relativa para que el HTML la encuentre desde la raíz
-            $rutaImagen = "../uploads/" . $nombreArchivo;
-        }
+        $urlNube = subirCloudinary($_FILES['imagen']['tmp_name']);
+        if ($urlNube) $rutaImagen = $urlNube;
     }
 
     if ($nombreP && $stock >= 0) {
-        // Pasamos los 6 parámetros al modelo
         $modelo->agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen, $rutaImagen);
-    }
-
-    header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
-    exit();
-}
-/* -------------------- ELIMINAR -------------------- */
-if ($accion === 'eliminar' && isset($_GET['id'])) {
-
-    $idProducto = $_GET['id']; // CAMBIO: Ahora es un string (ObjectId)
-
-    if (!empty($idProducto)) {
-        $modelo->eliminarProducto($idProducto);
     }
 
     header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
@@ -96,18 +73,12 @@ if ($accion === 'editar' && $_SERVER["REQUEST_METHOD"] === "POST") {
     $stock        = (int)($_POST['stock'] ?? 0);
     $almacen      = $_POST['almacen'] ?? ''; 
 
-    // Opcional: Lógica de imagen para edición
-    $rutaImagen = $_POST['imagenActual'] ?? null; // Mantener la anterior si no se sube nada
+    $rutaImagen = null; 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-        $nombreArchivo = time() . "_" . basename($_FILES['imagen']['name']);
-        $directorioDestino = __DIR__ . "/../uploads/";
-        if (move_uploaded_file($_FILES['imagen']['tmp_name'], $directorioDestino . $nombreArchivo)) {
-            $rutaImagen = "../uploads/" . $nombreArchivo;
-        }
+        $rutaImagen = subirCloudinary($_FILES['imagen']['tmp_name']);
     }
 
     if (!empty($idProducto) && $nombreP && $stock >= 0) {
-        // Nota: Deberás agregar $rutaImagen como 5to parámetro en modeloProducto->actualizarProducto
         $modelo->actualizarProducto($idProducto, $nombreP, $descripcionP, $stock, $almacen, $rutaImagen);
     }
 
@@ -115,42 +86,40 @@ if ($accion === 'editar' && $_SERVER["REQUEST_METHOD"] === "POST") {
     exit();
 }
 
+/* -------------------- ELIMINAR -------------------- */
+if ($accion === 'eliminar' && isset($_GET['id'])) {
+    $idProducto = $_GET['id'];
+    if (!empty($idProducto)) {
+        $modelo->eliminarProducto($idProducto);
+    }
+    header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
+    exit();
+}
+
 /* -------------------- SALIDA DE PRODUCTO -------------------- */
 if ($accion === 'salida' && $_SERVER["REQUEST_METHOD"] === "POST") {
-
-    $idProducto = $_POST['idProducto']; // CAMBIO: String
+    $idProducto = $_POST['idProducto'];
     $cantidad   = (int)$_POST['cantidad'];
 
     if (!empty($idProducto) && $cantidad > 0) {
         $stock_actual = $modelo->obtenerStock($idProducto);
-
         if ($cantidad <= $stock_actual) {
             $modelo->registrarSalida("salida", $idUsuario, $idProducto, $cantidad);
         }
     }
-
     header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
     exit();
 }
 
 /* -------------------- DEVOLUCIÓN -------------------- */
 if ($accion === 'devolucion' && $_SERVER["REQUEST_METHOD"] === "POST") {
-
-    $idProducto       = $_POST['idProducto']; // CAMBIO: String
+    $idProducto       = $_POST['idProducto'];
     $cantidadDevuelta = (int)$_POST['cantidad'];
 
     if (!empty($idProducto) && $cantidadDevuelta > 0) {
         $modelo->registrarDevolucion($idUsuario, $idProducto, $cantidadDevuelta);
     }
-
     header("Location: " . BASE_URL . "Controlador/controladorProducto.php?accion=listar");
-    exit();
-}
-
-/* Formulario devolución (GET) */
-if ($accion === 'devolucion' && $_SERVER["REQUEST_METHOD"] === "GET") {
-    $datos['productos'] = $modelo->obtenerProductos();
-    include __DIR__ . "/../Vista/vistaNuevaDevolucion.php";
     exit();
 }
 
@@ -159,18 +128,13 @@ if ($accion === 'devolucion' && $_SERVER["REQUEST_METHOD"] === "GET") {
  * ============================================================ */
 
 switch ($accion) {
-
     case 'listar':
-        // Configuración de paginación
         $porPagina = 10;
         $paginaActual = isset($_GET['p']) ? (int)$_GET['p'] : 1;
         if ($paginaActual < 1) $paginaActual = 1;
         $skip = ($paginaActual - 1) * $porPagina;
 
-        // LLAMADA CORRECTA AL MODELO CON PAGINACIÓN
         $datos['productos'] = $modelo->obtenerProductosPaginados($skip, $porPagina);
-
-        // Calcular total de páginas
         $totalRegistros = $modelo->contarProductos(); 
         $datos['totalPaginas'] = ceil($totalRegistros / $porPagina);
         $datos['paginaActual'] = $paginaActual;
@@ -178,84 +142,45 @@ switch ($accion) {
         include __DIR__ . "/../Vista/vistaProductos.php";
         break;
 
-    case 'agregar':
-        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            include __DIR__ . "/../Vista/vistaNuevoProducto.php";
-        }
-        break;
-
-    case 'salida':
-        if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-            $datos['productos'] = $modelo->obtenerProductos();
-            include __DIR__ . "/../Vista/vistaNuevaSalida.php";
-        }
-        break;
-
     case 'movimientos':
-        $fechaInicio = $_GET['fecha_inicio'] ?? null;
-        $fechaFin    = $_GET['fecha_fin'] ?? null;
-        $idProducto  = $_GET['id_producto'] ?? null; // String ObjectId
-        $idUsuarioF  = $_GET['id_usuario'] ?? null;  // String ObjectId
-
-        $datos['productos'] = $modelo->obtenerProductos();
-        $datos['usuarios']  = $modelo->obtenerUsuarios();
-
-        $datos['movimientos'] = $modeloMov->obtenerMovimientosFiltrados(
-            $fechaInicio,
-            $fechaFin,
-            $idProducto,
-            $idUsuarioF
-        );
-
-        include __DIR__ . "/../Vista/vistaMovimientos.php";
-        break;
-
-    case 'exportar':
         $fechaInicio = $_GET['fecha_inicio'] ?? null;
         $fechaFin    = $_GET['fecha_fin'] ?? null;
         $idProducto  = $_GET['id_producto'] ?? null;
         $idUsuarioF  = $_GET['id_usuario'] ?? null;
 
+        $datos['productos'] = $modelo->obtenerProductos();
+        $datos['usuarios']  = $modelo->obtenerUsuarios();
+
+        $datos['movimientos'] = $modeloMov->obtenerMovimientosFiltrados($fechaInicio, $fechaFin, $idProducto, $idUsuarioF);
+        include __DIR__ . "/../Vista/vistaMovimientos.php";
+        break;
+
+    case 'exportar':
+        // Lógica de exportación CSV mantenida igual
         $movimientos = $modeloMov->obtenerMovimientosFiltrados(
-            $fechaInicio,
-            $fechaFin,
-            $idProducto,
-            $idUsuarioF
+            $_GET['fecha_inicio'] ?? null,
+            $_GET['fecha_fin'] ?? null,
+            $_GET['id_producto'] ?? null,
+            $_GET['id_usuario'] ?? null
         );
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename=movimientos_inventario.csv');
-
-        $output    = fopen('php://output', 'w');
-        // Usamos UTF-8 BOM para que Excel reconozca los acentos correctamente
+        $output = fopen('php://output', 'w');
         fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-        $delimiter = ';';
-
-        // CABECERA: Añadimos 'Ubicación'
-        fputcsv($output, [
-            'ID Movimiento',
-            'Nombre del Producto',
-            'Ubicación', // <--- NUEVA COLUMNA
-            'Tipo',
-            'Cantidad',
-            'Usuario',
-            'Fecha y Hora'
-        ], $delimiter);
+        fputcsv($output, ['ID Movimiento','Nombre del Producto','Ubicación','Tipo','Cantidad','Usuario','Fecha y Hora'], ';');
 
         foreach ($movimientos as $fila) {
             fputcsv($output, [
                 (string)$fila['idMovimiento'],
                 $fila['nombreP'] ?? 'N/A',
-                $fila['almacen'] ?? 'No asignado', // <--- NUEVO DATO
+                $fila['almacen'] ?? 'No asignado',
                 ucfirst($fila['tipo'] ?? 'N/A'),
                 $fila['cantidad'],
                 $fila['nombreU'] ?? 'N/A',
                 is_object($fila['fechaM']) ? $fila['fechaM']->toDateTime()->format('d/m/Y H:i:s') : $fila['fechaM']
-            ], $delimiter);
+            ], ';');
         }
-
         fclose($output);
         exit();
-
-        
 }

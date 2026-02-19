@@ -32,7 +32,6 @@ class modeloProducto {
     /* ===========================
         AGREGAR PRODUCTO + MOVIMIENTO
     ============================ */
-    // CAMBIO: Añadimos $almacen como parámetro
     public function agregarProducto($idUsuario, $nombreP, $descripcionP, $stock, $almacen, $imagen = null) {
         try {
             $nuevoProducto = [
@@ -41,13 +40,14 @@ class modeloProducto {
                 'descripcionP' => $descripcionP,
                 'stock' => (int)$stock,
                 'almacen' => $almacen,
-                'imagen' => $imagen, // Se guarda la ruta o URL
+                'imagen' => $imagen, // Aquí se guarda la URL de Cloudinary (https://...)
                 'fechaI' => new UTCDateTime()
             ];
             
             $resultado = $this->db->producto->insertOne($nuevoProducto);
             $idProducto = $resultado->getInsertedId();
 
+            // Registro del movimiento inicial de entrada
             $this->db->movimientos->insertOne([
                 'tipo' => 'entrada',
                 'idUsuario' => new ObjectId($idUsuario),
@@ -62,34 +62,36 @@ class modeloProducto {
             return false;
         }
     }
+
     /* ===========================
-        ACTUALIZAR PRODUCTO
+        ACTUALIZAR PRODUCTO (EDICIÓN)
     ============================ */
-    // CAMBIO: Añadimos $almacen para que la edición rápida también lo actualice
     public function actualizarProducto($idProducto, $nombreP, $descripcionP, $stock, $almacen, $imagen = null) {
-    try {
-        $datosActualizar = [
-            'nombreP' => $nombreP,
-            'descripcionP' => $descripcionP,
-            'stock' => (int)$stock,
-            'almacen' => $almacen
-        ];
+        try {
+            $datosActualizar = [
+                'nombreP' => $nombreP,
+                'descripcionP' => $descripcionP,
+                'stock' => (int)$stock,
+                'almacen' => $almacen
+            ];
 
-        // Solo añadimos la imagen al set si no es null
-        if ($imagen !== null) {
-            $datosActualizar['imagen'] = $imagen;
+            // IMPORTANTE: Solo actualizamos el campo imagen si se recibe una nueva URL de Cloudinary
+            if ($imagen !== null) {
+                $datosActualizar['imagen'] = $imagen;
+            }
+
+            $resultado = $this->db->producto->updateOne(
+                ['_id' => new ObjectId($idProducto)],
+                ['$set' => $datosActualizar]
+            );
+            
+            // Retorna true incluso si no hubo cambios físicos pero la consulta fue exitosa
+            return true; 
+        } catch (Exception $e) {
+            return false;
         }
-
-        $resultado = $this->db->producto->updateOne(
-            ['_id' => new ObjectId($idProducto)],
-            ['$set' => $datosActualizar]
-        );
-        
-        return $resultado->getModifiedCount() > 0;
-    } catch (Exception $e) {
-        return false;
     }
-}
+
     /* ===========================
         ELIMINAR PRODUCTO + MOVIMIENTOS
     ============================ */
@@ -104,7 +106,7 @@ class modeloProducto {
     }
 
     /* ===========================
-        OBTENER STOCK
+        OBTENER STOCK ACTUAL
     ============================ */
     public function obtenerStock($idProducto) {
         $producto = $this->db->producto->findOne(['_id' => new ObjectId($idProducto)]);
@@ -163,19 +165,14 @@ class modeloProducto {
         CONTAR TOTAL PARA PAGINACIÓN
     ============================================================ */
     public function contarProductos() {
-        // Cuenta todos los documentos en la colección producto
         return $this->db->producto->countDocuments();
     }
 
     /* ============================================================
-        OBTENER PRODUCTOS CON PAGINACIÓN Y ORDEN DESCENDENTE
+        OBTENER PRODUCTOS CON PAGINACIÓN
     ============================================================ */
     public function obtenerProductosPaginados($skip, $limit) {
         try {
-            // Buscamos todos los productos
-            // sort(['_id' => -1]) hace que los más nuevos aparezcan primero
-            // skip() se salta los registros de páginas anteriores
-            // limit() trae solo la cantidad permitida por página
             $opciones = [
                 'sort'  => ['_id' => -1], 
                 'skip'  => (int)$skip,
